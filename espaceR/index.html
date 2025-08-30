@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Réparateur - BLACKLIST</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #e74c3c;
+            --accent-color: #3498db;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --sidebar-width: 250px;
+            --header-height: 70px;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding: 20px 0;
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+        }
+
+        .logo {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .logo i {
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+
+        .logo h2 {
+            font-size: 1.5rem;
+        }
+
+        .menu-item {
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .menu-item i {
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--box-shadow);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            object-fit: cover;
+            border: 2px solid var(--accent-color);
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            width: 200px;
+            padding: 10px 0;
+            display: none;
+            z-index: 100;
+        }
+
+        .user-dropdown.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .user-dropdown-item {
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .user-dropdown-item:hover {
+            background-color: #f5f7fa;
+        }
+
+        .user-dropdown-item i {
+            margin-right: 10px;
+            color: var(--accent-color);
+        }
+
+        /* Dashboard Cards */
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 1.5rem;
+        }
+
+        .card-1 .card-icon {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: var(--secondary-color);
+        }
+
+        .card-2 .card-icon {
+            background-color: rgba(52, 152, 219, 0.2);
+            color: var(--accent-color);
+        }
+
+        .card-3 .card-icon {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: var(--success-color);
+        }
+
+        .card h3 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--dark-color);
+        }
+
+        .card p {
+            color: #7f8c8d;
+            font-weight: 600;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .action-button {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .action-button:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-3px);
+        }
+
+        .action-button i {
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+        }
+
+        .action-button h3 {
+            margin-bottom: 10px;
+            color: var(--dark-color);
+        }
+
+        .action-button p {
+            color: #7f8c8d;
+        }
+
+        /* Forms */
+        .form-container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 14px 15px;
+            border: 2px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        input:focus {
+            border-color: var(--accent-color);
+            outline: none;
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-block;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+        }
+
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+
+        .btn-danger {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        /* Results */
+        .results-container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .results-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: var(--dark-color);
+            display: inline-block;
+            width: 200px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 70px;
+                overflow: hidden;
+            }
+
+            .sidebar .logo h2,
+            .sidebar .menu-item span {
+                display: none;
+            }
+
+            .sidebar .menu-item {
+                justify-content: center;
+            }
+
+            .sidebar .menu-item i {
+                margin-right: 0;
+            }
+
+            .main-content {
+                margin-left: 70px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+            }
+
+            .sidebar {
+                left: -70px;
+                transition: var(--transition);
+            }
+
+            .sidebar.show {
+                left: 0;
+            }
+
+            .menu-toggle {
+                display: block;
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 1100;
+                background-color: var(--accent-color);
+                color: white;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                box-shadow: var(--box-shadow);
+            }
+
+            .dashboard-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .result-label {
+                width: 130px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Menu toggle for mobile -->
+    <div class="menu-toggle" id="menu-toggle">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="logo">
+            <i class="fas fa-tools"></i>
+            <h2>Réparateur</h2>
+        </div>
+
+        <div class="menu-item active" data-target="dashboard">
+            <i class="fas fa-chart-line"></i>
+            <span>Tableau de bord</span>
+        </div>
+
+        <div class="menu-item" data-target="add-phone-form">
+            <i class="fas fa-mobile-alt"></i>
+            <span>Ajouter téléphone</span>
+        </div>
+
+        <div class="menu-item" data-target="check-phone-form">
+            <i class="fas fa-search"></i>
+            <span>Vérifier téléphone</span>
+        </div>
+
+        <div class="menu-item">
+            <i class="fas fa-history"></i>
+            <span>Historique</span>
+        </div>
+
+        <div class="menu-item">
+            <i class="fas fa-cog"></i>
+            <span>Paramètres</span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <h1>Tableau de bord</h1>
+            <div class="user-profile" id="user-profile">
+                <img src="https://ui-avatars.com/api/?name=Reparateur&background=3498db&color=fff" alt="User">
+                <span>Jean Réparateur</span>
+                <i class="fas fa-chevron-down"></i>
+
+                <div class="user-dropdown" id="user-dropdown">
+                    <div class="user-dropdown-item">
+                        <i class="fas fa-user"></i>
+                        <span>Mon profil</span>
+                    </div>
+                    <div class="user-dropdown-item">
+                        <i class="fas fa-cog"></i>
+                        <span>Paramètres</span>
+                    </div>
+                    <div class="user-dropdown-item">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Déconnexion</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Cards -->
+        <div class="dashboard-cards">
+            <div class="card card-1">
+                <div class="card-icon">
+                    <i class="fas fa-ban"></i>
+                </div>
+                <h3>42</h3>
+                <p>Téléphones BLACKLISTÉS</p>
+            </div>
+
+            <div class="card card-2">
+                <div class="card-icon">
+                    <i class="fas fa-mobile"></i>
+                </div>
+                <h3>128</h3>
+                <p>Téléphones FLASHÉS</p>
+            </div>
+
+            <div class="card card-3">
+                <div class="card-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3>18</h3>
+                <p>Téléphones RETROUVÉS</p>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <div class="action-button" id="add-phone-btn">
+                <i class="fas fa-plus-circle"></i>
+                <h3>Ajouter un téléphone</h3>
+                <p>Enregistrer un téléphone flashé dans la base de données</p>
+            </div>
+
+            <div class="action-button" id="check-phone-btn">
+                <i class="fas fa-search"></i>
+                <h3>Vérifier un téléphone</h3>
+                <p>Vérifier si un téléphone est blacklisté</p>
+            </div>
+        </div>
+
+        <!-- Add Phone Form -->
+        <div class="form-container" id="add-phone-form">
+            <h2 class="form-title">Ajouter un téléphone flashé</h2>
+            
+            <form id="add-phone-form-data">
+                <div class="form-group">
+                    <label for="imei">IMEI du téléphone :</label>
+                    <input type="number" id="imei" placeholder="Entrez les 15 chiffres de l'IMEI" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="marque">Marque :</label>
+                    <input type="text" id="marque" placeholder="Marque du téléphone" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="modele">Modèle :</label>
+                    <input type="text" id="modele" placeholder="Modèle du téléphone">
+                </div>
+                
+                <div class="form-group">
+                    <label for="nom-personne">Nom de la personne :</label>
+                    <input type="text" id="nom-personne" placeholder="Nom complet du propriétaire" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="telecom">Opérateur :</label>
+                    <input type="text" id="telecom" placeholder="Opérateur téléphonique" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="numero">Numéro de téléphone :</label>
+                    <input type="text" id="numero" placeholder="Numéro de téléphone" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cnib">CNIB :</label>
+                    <input type="text" id="cnib" placeholder="Numéro de CNIB" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="autre-piece">Autre pièce d'identité :</label>
+                    <input type="text" id="autre-piece" placeholder="Autre pièce d'identité">
+                </div>
+                
+                <button type="submit" class="btn-success">Enregistrer le téléphone</button>
+            </form>
+        </div>
+
+        <!-- Check Phone Form -->
+        <div class="form-container" id="check-phone-form">
+            <h2 class="form-title">Vérifier un téléphone</h2>
+            
+            <div class="form-group">
+                <label for="check-imei">IMEI du téléphone :</label>
+                <input type="number" id="check-imei" placeholder="Entrez les 15 chiffres de l'IMEI">
+            </div>
+            
+            <button id="check-imei-btn">Vérifier</button>
+
+            <!-- Results will be displayed here -->
+            <div class="results-container" id="check-results">
+                <h3>Résultats de la vérification</h3>
+                
+                <div class="result-item">
+                    <span class="result-label">Statut :</span>
+                    <span id="status" style="color: #e74c3c; font-weight: bold;">BLACKLISTÉ</span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">Marque :</span>
+                    <span id="result-marque">Samsung</span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">IMEI :</span>
+                    <span id="result-imei">123456789012345</span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">Propriétaire :</span>
+                    <span id="result-proprietaire">Jean Dupont</span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">Téléphone :</span>
+                    <span id="result-telephone">06 12 34 56 78</span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">CNIB :</span>
+                    <span id="result-cnib">CI123456789</span>
+                </div>
+                
+                <div class="result-item">
+                    <span class="result-label">Date signalement :</span>
+                    <span id="result-date">12/05/2023</span>
+                </div>
+                
+                <button id="report-found-btn" class="btn-success">Signaler comme retrouvé</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal" id="profile-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 class="modal-title">Mon Profil</h2>
+            
+            <div class="form-group">
+                <label for="profile-name">Nom complet :</label>
+                <input type="text" id="profile-name" value="Jean Réparateur">
+            </div>
+            
+            <div class="form-group">
+                <label for="profile-email">Email :</label>
+                <input type="email" id="profile-email" value="jean@reparateur.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="profile-phone">Téléphone :</label>
+                <input type="text" id="profile-phone" value="06 12 34 56 78">
+            </div>
+            
+            <div class="form-group">
+                <label for="profile-cnib">CNIB :</label>
+                <input type="text" id="profile-cnib" value="CI123456789">
+            </div>
+            
+            <div class="form-group">
+                <label for="profile-telecom">Opérateur :</label>
+                <input type="text" id="profile-telecom" value="Orange">
+            </div>
+            
+            <button>Enregistrer les modifications</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Menu toggle for mobile
+            const menuToggle = document.getElementById('menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('show');
+            });
+
+            // User profile dropdown
+            const userProfile = document.getElementById('user-profile');
+            const userDropdown = document.getElementById('user-dropdown');
+            const profileModal = document.getElementById('profile-modal');
+            
+            userProfile.addEventListener('click', function() {
+                userDropdown.classList.toggle('show');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!userProfile.contains(e.target)) {
+                    userDropdown.classList.remove('show');
+                }
+            });
+
+            // Menu navigation
+            const menuItems = document.querySelectorAll('.menu-item');
+            const formContainers = document.querySelectorAll('.form-container');
+            
+            menuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const target = this.getAttribute('data-target');
+                    
+                    // Remove active class from all menu items
+                    menuItems.forEach(i => i.classList.remove('active'));
+                    // Add active class to clicked menu item
+                    this.classList.add('active');
+                    
+                    // Hide all form containers
+                    formContainers.forEach(container => container.classList.remove('active'));
+                    
+                    // Show target container if exists
+                    if (target) {
+                        document.getElementById(target).classList.add('active');
+                    }
+                });
+            });
+
+            // Action buttons
+            const addPhoneBtn = document.getElementById('add-phone-btn');
+            const checkPhoneBtn = document.getElementById('check-phone-btn');
+            
+            addPhoneBtn.addEventListener('click', function() {
+                // Hide all form containers
+                formContainers.forEach(container => container.classList.remove('active'));
+                // Show add phone form
+                document.getElementById('add-phone-form').classList.add('active');
+                
+                // Update menu active item
+                menuItems.forEach(item => item.classList.remove('active'));
+                document.querySelector('[data-target="add-phone-form"]').classList.add('active');
+            });
+            
+            checkPhoneBtn.addEventListener('click', function() {
+                // Hide all form containers
+                formContainers.forEach(container => container.classList.remove('active'));
+                // Show check phone form
+                document.getElementById('check-phone-form').classList.add('active');
+                
+                // Update menu active item
+                menuItems.forEach(item => item.classList.remove('active'));
+                document.querySelector('[data-target="check-phone-form"]').classList.add('active');
+            });
+
+            // Check IMEI button
+            const checkImeiBtn = document.getElementById('check-imei-btn');
+            const checkResults = document.getElementById('check-results');
+            
+            checkImeiBtn.addEventListener('click', function() {
+                const imei = document.getElementById('check-imei').value;
+                
+                if (!imei || imei.length !== 15) {
+                    alert('Veuillez entrer un numéro IMEI valide (15 chiffres)');
+                    return;
+                }
+                
+                // Simulate API call
+                setTimeout(() => {
+                    checkResults.classList.add('active');
+                }, 1000);
+            });
+
+            // Form submissions
+            const addPhoneForm = document.getElementById('add-phone-form-data');
+            
+            addPhoneForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Simulate API call
+                alert('Téléphone enregistré avec succès!');
+                addPhoneForm.reset();
+            });
+
+            // Report found button
+            const reportFoundBtn = document.getElementById('report-found-btn');
+            
+            reportFoundBtn.addEventListener('click', function() {
+                alert('Téléphone signalé comme retrouvé!');
+            });
+        });
+    </script>
+</body>
+</html>
