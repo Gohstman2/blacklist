@@ -852,6 +852,158 @@
                 return 'Passeport: ' + Math.floor(100000000 + Math.random() * 900000000);
             }
         });
+
+        // Fonction pour gérer l'ID utilisateur unique
+function initUserID() {
+    // Clé pour le stockage local
+    const USER_ID_KEY = 'blacklist_user_id';
+    const USER_IP_KEY = 'blacklist_user_ip';
+    
+    // Vérifier si l'ID existe déjà dans le stockage local
+    const storedUserID = localStorage.getItem(USER_ID_KEY);
+    const storedUserIP = localStorage.getItem(USER_IP_KEY);
+    
+    if (storedUserID && storedUserIP) {
+        console.log('ID utilisateur trouvé dans le stockage local:', storedUserID);
+        console.log('IP stockée:', storedUserIP);
+        
+        // Vérifier si l'IP a changé (connexion différente)
+        checkIPChange(storedUserID, storedUserIP);
+        return storedUserID;
+    } else {
+        // Faire une requête pour obtenir un nouvel ID
+        fetchUserID();
+        return null;
+    }
+}
+
+// Fonction pour faire la requête API et obtenir l'ID
+function fetchUserID() {
+    const API_URL = 'https://sendfiles.pythonanywhere.com/api/generate_user_id'; // Adjust this URL if needed
+    
+    fetch(API_URL, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Erreur réseau: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.user_id) {
+            // Stocker l'ID et l'IP dans le localStorage
+            localStorage.setItem('blacklist_user_id', data.user_id);
+            localStorage.setItem('blacklist_user_ip', data.ip_client);
+            
+            console.log('Nouvel ID utilisateur généré:', data.user_id);
+            console.log('IP du client:', data.ip_client);
+            
+            // Déclencher un event personnalisé pour informer que l'ID est prêt
+            const event = new CustomEvent('userIDReady', {
+                detail: {
+                    userID: data.user_id,
+                    userIP: data.ip_client,
+                    status: data.status
+                }
+            });
+            document.dispatchEvent(event);
+            
+        } else if (data.error) {
+            console.error('Erreur lors de la génération de l\'ID:', data.error);
+            handleUserIDError(data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur fetch:', error);
+        handleUserIDError(error.message);
+    });
+}
+
+// Fonction pour vérifier si l'IP a changé
+function checkIPChange(storedUserID, storedUserIP) {
+    // Obtenir l'IP actuelle (approximative via une requête API)
+    fetch('/api/get_client_ip', {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const currentIP = data.ip || 'unknown';
+        
+        if (currentIP !== storedUserIP && currentIP !== 'unknown') {
+            console.log('IP a changé, régénération de l\'ID...');
+            console.log('Ancienne IP:', storedUserIP);
+            console.log('Nouvelle IP:', currentIP);
+            
+            // Supprimer l'ancien ID et en générer un nouveau
+            localStorage.removeItem('blacklist_user_id');
+            localStorage.removeItem('blacklist_user_ip');
+            fetchUserID();
+        }
+    })
+    .catch(error => {
+        console.warn('Impossible de vérifier l\'IP, continuation avec l\'ID existant');
+        // On continue avec l'ID existant même si la vérification échoue
+    });
+}
+
+// Fonction de gestion des erreurs
+function handleUserIDError(error) {
+    console.error('Erreur avec l\'ID utilisateur:', error);
+    
+    // Générer un ID local temporaire en cas d'erreur
+    const tempUserID = 'temp_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+    localStorage.setItem('blacklist_user_id', tempUserID);
+    localStorage.setItem('blacklist_user_ip', 'error_' + Date.now());
+    
+    const event = new CustomEvent('userIDError', {
+        detail: {
+            error: error,
+            tempID: tempUserID
+        }
+    });
+    document.dispatchEvent(event);
+}
+
+// Fonction pour obtenir l'ID utilisateur (à utiliser dans votre code)
+function getUserID() {
+    return localStorage.getItem('blacklist_user_id');
+}
+
+// Fonction pour obtenir l'IP utilisateur
+function getUserIP() {
+    return localStorage.getItem('blacklist_user_ip');
+}
+
+// Fonction pour vérifier si l'ID est temporaire/erreur
+function isTemporaryID() {
+    const id = getUserID();
+    return id && id.startsWith('temp_');
+}
+
+// Initialiser au chargement du DOM
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM chargé - Vérification de l\'ID utilisateur...');
+    initUserID();
+});
+
+// Écouter l'event personnalisé quand l'ID est prêt
+document.addEventListener('userIDReady', function(e) {
+    console.log('ID utilisateur prêt:', e.detail.userID);
+    // Ici vous pouvez exécuter du code qui dépend de l'ID utilisateur
+});
+
+// Écouter l'event d'erreur
+document.addEventListener('userIDError', function(e) {
+    console.warn('ID temporaire généré en raison d\'une erreur:', e.detail.tempID);
+});
     </script>
 </body>
 </html>
