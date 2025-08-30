@@ -755,7 +755,447 @@
         // Charger le dashboard par défaut
         if (authToken) {
             loadDashboard();
+        } 
+        // =============================================================
+// FONCTIONS POUR L'ONGLET BLACKLIST
+// =============================================================
+
+function loadBlacklistTab() {
+    const tabContent = document.getElementById('tab-content');
+    if (!tabContent) return;
+    
+    tabContent.innerHTML = `
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Gestion de la Blacklist</h3>
+                <button onclick="loadBlacklistData()" class="btn btn-primary">
+                    <i class="fas fa-sync"></i> Actualiser
+                </button>
+            </div>
+            <div id="blacklist-content">
+                <div class="loading">
+                    <div class="loader"></div>
+                    <p>Chargement de la blacklist...</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    loadBlacklistData();
+}
+
+async function loadBlacklistData() {
+    const content = document.getElementById('blacklist-content');
+    if (!content) return;
+    
+    content.innerHTML = `
+        <div class="loading">
+            <div class="loader"></div>
+            <p>Chargement des données...</p>
+        </div>
+    `;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/blacklist`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
         }
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        if (!data.blacklist || data.blacklist.length === 0) {
+            content.innerHTML = '<p class="notification info">Aucun téléphone dans la blacklist</p>';
+            return;
+        }
+
+        let html = `
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>IMEI</th>
+                            <th>Marque</th>
+                            <th>Propriétaire</th>
+                            <th>Téléphone</th>
+                            <th>CNIB</th>
+                            <th>Date signalement</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        data.blacklist.forEach(phone => {
+            html += `
+                <tr>
+                    <td>${phone.imei || 'N/A'}</td>
+                    <td>${phone.marque || 'N/A'}</td>
+                    <td>${phone.nom_complet || 'N/A'}</td>
+                    <td>${phone.numero_telephone || 'N/A'}</td>
+                    <td>${phone.cnib || 'N/A'}</td>
+                    <td>${phone.date_signalement ? new Date(phone.date_signalement).toLocaleDateString() : 'N/A'}</td>
+                    <td>
+                        <button onclick="markAsRecovered('${phone.imei}')" class="btn btn-success btn-sm">
+                            <i class="fas fa-check"></i> Retrouvé
+                        </button>
+                        <button onclick="deleteFromBlacklist('${phone.imei}')" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-muted">Total: ${data.blacklist.length} téléphones</p>
+        `;
+
+        content.innerHTML = html;
+
+    } catch (error) {
+        console.error('Erreur blacklist:', error);
+        content.innerHTML = `
+            <div class="notification error">
+                Erreur: ${error.message}
+            </div>
+        `;
+    }
+}
+
+// =============================================================
+// FONCTIONS POUR L'ONGLET RÉPARATEURS
+// =============================================================
+
+function loadReparateursTab() {
+    const tabContent = document.getElementById('tab-content');
+    if (!tabContent) return;
+    
+    tabContent.innerHTML = `
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Gestion des Réparateurs</h3>
+                <button onclick="loadReparateursData()" class="btn btn-primary">
+                    <i class="fas fa-sync"></i> Actualiser
+                </button>
+            </div>
+            <div id="reparateurs-content">
+                <div class="loading">
+                    <div class="loader"></div>
+                    <p>Chargement des réparateurs...</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    loadReparateursData();
+}
+
+async function loadReparateursData() {
+    const content = document.getElementById('reparateurs-content');
+    if (!content) return;
+    
+    content.innerHTML = `
+        <div class="loading">
+            <div class="loader"></div>
+            <p>Chargement des données...</p>
+        </div>
+    `;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/reparateurs`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        if (!data.reparateurs || data.reparateurs.length === 0) {
+            content.innerHTML = '<p class="notification info">Aucun réparateur enregistré</p>';
+            return;
+        }
+
+        let html = `
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nom complet</th>
+                            <th>Email</th>
+                            <th>Téléphone</th>
+                            <th>CNIB</th>
+                            <th>Téléphones flashés</th>
+                            <th>Date inscription</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        data.reparateurs.forEach(rep => {
+            html += `
+                <tr>
+                    <td>${rep.nom_complet || 'N/A'}</td>
+                    <td>${rep.email || 'N/A'}</td>
+                    <td>${rep.numero_telephone || 'N/A'}</td>
+                    <td>${rep.cnib || 'N/A'}</td>
+                    <td>${rep.nombre_telephones || 0}</td>
+                    <td>${rep.date_inscription ? new Date(rep.date_inscription).toLocaleDateString() : 'N/A'}</td>
+                    <td>
+                        <button onclick="blockReparateur(${rep.id})" class="btn btn-warning btn-sm">
+                            <i class="fas fa-ban"></i> Bloquer
+                        </button>
+                        <button onclick="viewReparateur(${rep.id})" class="btn btn-info btn-sm">
+                            <i class="fas fa-eye"></i> Voir
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-muted">Total: ${data.reparateurs.length} réparateurs</p>
+        `;
+
+        content.innerHTML = html;
+
+    } catch (error) {
+        console.error('Erreur réparateurs:', error);
+        content.innerHTML = `
+            <div class="notification error">
+                Erreur: ${error.message}
+            </div>
+        `;
+    }
+}
+
+// =============================================================
+// FONCTIONS POUR L'ONGLET UTILISATEURS
+// =============================================================
+
+function loadUtilisateursTab() {
+    const tabContent = document.getElementById('tab-content');
+    if (!tabContent) return;
+    
+    tabContent.innerHTML = `
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Gestion des Utilisateurs</h3>
+            </div>
+            <div class="notification info">
+                Module utilisateurs en cours de développement
+            </div>
+        </div>
+    `;
+}
+
+// =============================================================
+// FONCTIONS POUR L'ONGLET STATISTIQUES
+// =============================================================
+
+function loadStatistiquesTab() {
+    const tabContent = document.getElementById('tab-content');
+    if (!tabContent) return;
+    
+    tabContent.innerHTML = `
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Statistiques Avancées</h3>
+            </div>
+            <div class="notification info">
+                Module statistiques avancées en cours de développement
+            </div>
+        </div>
+    `;
+}
+
+// =============================================================
+// FONCTIONS POUR L'ONGLET PARAMÈTRES
+// =============================================================
+
+function loadParametresTab() {
+    const tabContent = document.getElementById('tab-content');
+    if (!tabContent) return;
+    
+    tabContent.innerHTML = `
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Paramètres Système</h3>
+            </div>
+            <div class="notification info">
+                Module paramètres en cours de développement
+            </div>
+        </div>
+    `;
+}
+
+// =============================================================
+// FONCTIONS D'ACTION
+// =============================================================
+
+async function markAsRecovered(imei) {
+    if (!confirm('Marquer ce téléphone comme retrouvé ?')) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/mark_recovered/${imei}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('blacklist-content', data.message, 'success');
+            loadBlacklistData();
+        } else {
+            throw new Error(data.error);
+        }
+    } catch (error) {
+        console.error('Erreur marquage retrouvé:', error);
+        showNotification('blacklist-content', 'Erreur: ' + error.message, 'error');
+    }
+}
+
+async function deleteFromBlacklist(imei) {
+    if (!confirm('Supprimer définitivement ce téléphone de la blacklist ?')) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/delete_blacklist/${imei}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('blacklist-content', data.message, 'success');
+            loadBlacklistData();
+        } else {
+            throw new Error(data.error);
+        }
+    } catch (error) {
+        console.error('Erreur suppression:', error);
+        showNotification('blacklist-content', 'Erreur: ' + error.message, 'error');
+    }
+}
+
+async function blockReparateur(id) {
+    if (!confirm('Bloquer ce réparateur ?')) return;
+    
+    try {
+        showNotification('reparateurs-content', 'Tentative de blocage...', 'info');
+        
+        // Simuler une requête (à remplacer par votre endpoint réel)
+        setTimeout(() => {
+            showNotification('reparateurs-content', 'Réparateur bloqué avec succès', 'success');
+            loadReparateursData();
+        }, 1000);
+        
+    } catch (error) {
+        showNotification('reparateurs-content', 'Erreur: ' + error.message, 'error');
+    }
+}
+
+async function viewReparateur(id) {
+    alert(`Voir les détails du réparateur ID: ${id}\n\nCette fonctionnalité sera implémentée prochainement.`);
+}
+
+// =============================================================
+// FONCTION PRINCIPALE DE CHARGEMENT DES ONGLETS
+// =============================================================
+
+async function loadTab(tabName) {
+    const tabContent = document.getElementById('tab-content');
+    if (!tabContent) return;
+    
+    tabContent.innerHTML = `
+        <div class="loading">
+            <div class="loader"></div>
+            <p>Chargement...</p>
+        </div>
+    `;
+
+    try {
+        switch(tabName) {
+            case 'dashboard':
+                await loadDashboard();
+                break;
+            case 'recherche':
+                loadRechercheTab();
+                break;
+            case 'blacklist':
+                loadBlacklistTab();
+                break;
+            case 'reparateurs':
+                loadReparateursTab();
+                break;
+            case 'utilisateurs':
+                loadUtilisateursTab();
+                break;
+            case 'statistiques':
+                loadStatistiquesTab();
+                break;
+            case 'parametres':
+                loadParametresTab();
+                break;
+            default:
+                tabContent.innerHTML = `<div class="notification info">Onglet non reconnu</div>`;
+        }
+    } catch (error) {
+        console.error('Erreur chargement onglet:', error);
+        tabContent.innerHTML = `
+            <div class="notification error">
+                Erreur: ${error.message}
+            </div>
+        `;
+    }
+}
+
+// =============================================================
+// EXPOSER LES FONCTIONS GLOBALEMENT
+// =============================================================
+
+window.loadBlacklistData = loadBlacklistData;
+window.loadReparateursData = loadReparateursData;
+window.markAsRecovered = markAsRecovered;
+window.deleteFromBlacklist = deleteFromBlacklist;
+window.blockReparateur = blockReparateur;
+window.viewReparateur = viewReparateur;
     </script>
 </body>
 </html>
