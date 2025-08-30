@@ -7,400 +7,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #e74c3c;
-            --accent-color: #3498db;
-            --success-color: #2ecc71;
-            --warning-color: #f39c12;
-            --danger-color: #e74c3c;
-            --light-color: #ecf0f1;
-            --dark-color: #2c3e50;
-            --border-radius: 8px;
-            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s ease;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        body {
-            background: #f8f9fa;
-            color: #333;
-            line-height: 1.6;
-        }
-
-        .admin-container {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 250px;
-            background: var(--primary-color);
-            color: white;
-            padding: 20px 0;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-        }
-
-        .sidebar-header {
-            padding: 20px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .sidebar-header h2 {
-            color: white;
-            margin-bottom: 5px;
-        }
-
-        .sidebar-menu {
-            list-style: none;
-            padding: 20px 0;
-        }
-
-        .sidebar-menu li {
-            margin-bottom: 5px;
-        }
-
-        .sidebar-menu a {
-            display: block;
-            padding: 12px 20px;
-            color: #ddd;
-            text-decoration: none;
-            transition: var(--transition);
-            border-left: 4px solid transparent;
-        }
-
-        .sidebar-menu a:hover,
-        .sidebar-menu a.active {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border-left-color: var(--accent-color);
-        }
-
-        .sidebar-menu i {
-            width: 25px;
-            margin-right: 10px;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            margin-left: 250px;
-            padding: 20px;
-        }
-
-        .header {
-            background: white;
-            padding: 20px;
-            border-radius: var(--border-radius);
-            margin-bottom: 20px;
-            box-shadow: var(--box-shadow);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            text-align: center;
-            transition: var(--transition);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin-bottom: 10px;
-        }
-
-        .stat-label {
-            color: #7f8c8d;
-            font-weight: 600;
-        }
-
-        .card {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: var(--box-shadow);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--light-color);
-        }
-
-        .card-title {
-            font-size: 1.5rem;
-            color: var(--primary-color);
-            margin: 0;
-        }
-
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-
-        th {
-            background: var(--light-color);
-            font-weight: 600;
-            color: var(--dark-color);
-        }
-
-        tr:hover {
-            background: #f8f9fa;
-        }
-
-        .btn {
-            padding: 8px 15px;
-            border: none;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            transition: var(--transition);
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-primary {
-            background: var(--accent-color);
-            color: white;
-        }
-
-        .btn-danger {
-            background: var(--danger-color);
-            color: white;
-        }
-
-        .btn-success {
-            background: var(--success-color);
-            color: white;
-        }
-
-        .btn-warning {
-            background: var(--warning-color);
-            color: white;
-        }
-
-        .btn-sm {
-            padding: 5px 10px;
-            font-size: 0.8rem;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--dark-color);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #ddd;
-            border-radius: var(--border-radius);
-            font-size: 16px;
-            transition: var(--transition);
-        }
-
-        .form-control:focus {
-            border-color: var(--accent-color);
-            outline: none;
-        }
-
-        .login-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .login-card {
-            background: white;
-            padding: 40px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 300px;
-            margin-bottom: 20px;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .notification {
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: var(--border-radius);
-            font-weight: 600;
-        }
-
-        .success {
-            background: rgba(46, 204, 113, 0.2);
-            color: var(--success-color);
-            border: 1px solid var(--success-color);
-        }
-
-        .error {
-            background: rgba(231, 76, 60, 0.2);
-            color: var(--danger-color);
-            border: 1px solid var(--danger-color);
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-        }
-
-        .loader {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--accent-color);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-            }
-            
-            .main-content {
-                margin-left: 0;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+        /* ... (VOTRE CSS EXISTANT RESTE IDENTIQUE) ... */
     </style>
 </head>
 <body>
-    <!-- Page de connexion -->
-    <div id="login-page" class="login-container">
-        <div class="login-card">
-            <h2 style="text-align: center; margin-bottom: 30px; color: var(--primary-color);">
-                <i class="fas fa-lock"></i> Admin BLACKLIST
-            </h2>
-            
-            <form id="login-form">
-                <div class="form-group">
-                    <label for="username">Nom d'utilisateur :</label>
-                    <input type="text" id="username" class="form-control" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Mot de passe :</label>
-                    <input type="password" id="password" class="form-control" required>
-                </div>
-                
-                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px;">
-                    Se connecter
-                </button>
-            </form>
-            
-            <div id="login-notification"></div>
-        </div>
-    </div>
-
-    <!-- Dashboard Admin -->
-    <div id="admin-dashboard" class="admin-container hidden">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h2><i class="fas fa-shield-alt"></i> ADMIN</h2>
-                <p>Panel de contrôle</p>
-            </div>
-            
-            <ul class="sidebar-menu">
-                <li><a href="#dashboard" class="active" data-tab="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                <li><a href="#recherche" data-tab="recherche"><i class="fas fa-search"></i> Recherche IMEI</a></li>
-                <li><a href="#blacklist" data-tab="blacklist"><i class="fas fa-ban"></i> Blacklist</a></li>
-                <li><a href="#reparateurs" data-tab="reparateurs"><i class="fas fa-tools"></i> Réparateurs</a></li>
-                <li><a href="#utilisateurs" data-tab="utilisateurs"><i class="fas fa-users"></i> Utilisateurs</a></li>
-                <li><a href="#statistiques" data-tab="statistiques"><i class="fas fa-chart-bar"></i> Statistiques</a></li>
-                <li><a href="#parametres" data-tab="parametres"><i class="fas fa-cog"></i> Paramètres</a></li>
-                <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <div class="header">
-                <h1>Panel d'Administration</h1>
-                <div id="admin-info">
-                    <span>Connecté en tant que <strong>admin</strong></span>
-                </div>
-            </div>
-
-            <!-- Contenu des différents onglets -->
-            <div id="tab-content">
-                <!-- Le contenu sera chargé dynamiquement -->
-                <div class="loading">
-                    <div class="loader"></div>
-                    <p>Chargement du dashboard...</p>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- ... (VOTRE HTML EXISTANT RESTE IDENTIQUE) ... -->
 
     <script>
         const API_BASE_URL = 'https://sendfiles.pythonanywhere.com/api';
@@ -594,6 +205,289 @@
         }
 
         // =============================================================
+        // FONCTIONS POUR LES DIFFÉRENTS ONGLETS
+        // =============================================================
+
+        function loadRechercheTab() {
+            const tabContent = document.getElementById('tab-content');
+            tabContent.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recherche avancée IMEI</h3>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="imei-search" class="form-control" placeholder="Entrez l'IMEI (15 chiffres)" maxlength="15">
+                    </div>
+                    <button onclick="searchImei()" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Rechercher
+                    </button>
+                    <div id="search-results" style="margin-top: 20px;"></div>
+                </div>
+            `;
+        }
+
+        function loadBlacklistTab() {
+            const tabContent = document.getElementById('tab-content');
+            tabContent.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Gestion de la Blacklist</h3>
+                        <button onclick="loadBlacklistData()" class="btn btn-primary">
+                            <i class="fas fa-sync"></i> Actualiser
+                        </button>
+                    </div>
+                    <div id="blacklist-content">
+                        <div class="loading">
+                            <div class="loader"></div>
+                            <p>Chargement de la blacklist...</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            loadBlacklistData();
+        }
+
+        async function loadBlacklistData() {
+            const content = document.getElementById('blacklist-content');
+            content.innerHTML = `
+                <div class="loading">
+                    <div class="loader"></div>
+                    <p>Chargement des données...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin/blacklist`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                if (data.blacklist.length === 0) {
+                    content.innerHTML = '<p>Aucun téléphone dans la blacklist</p>';
+                    return;
+                }
+
+                let html = `
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>IMEI</th>
+                                    <th>Marque</th>
+                                    <th>Propriétaire</th>
+                                    <th>CNIB</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                data.blacklist.forEach(phone => {
+                    html += `
+                        <tr>
+                            <td>${phone.imei}</td>
+                            <td>${phone.marque}</td>
+                            <td>${phone.nom_complet}</td>
+                            <td>${phone.cnib}</td>
+                            <td>${new Date(phone.date_signalement).toLocaleDateString()}</td>
+                            <td>
+                                <button onclick="markAsRecovered('${phone.imei}')" class="btn btn-success btn-sm">
+                                    <i class="fas fa-check"></i> Retrouvé
+                                </button>
+                                <button onclick="deleteFromBlacklist('${phone.imei}')" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-muted">Total: ${data.blacklist.length} téléphones</p>
+                `;
+
+                content.innerHTML = html;
+
+            } catch (error) {
+                content.innerHTML = `
+                    <div class="notification error">
+                        Erreur: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function loadReparateursTab() {
+            const tabContent = document.getElementById('tab-content');
+            tabContent.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Gestion des Réparateurs</h3>
+                        <button onclick="loadReparateursData()" class="btn btn-primary">
+                            <i class="fas fa-sync"></i> Actualiser
+                        </button>
+                    </div>
+                    <div id="reparateurs-content">
+                        <div class="loading">
+                            <div class="loader"></div>
+                            <p>Chargement des réparateurs...</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            loadReparateursData();
+        }
+
+        async function loadReparateursData() {
+            const content = document.getElementById('reparateurs-content');
+            content.innerHTML = `
+                <div class="loading">
+                    <div class="loader"></div>
+                    <p>Chargement des données...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin/reparateurs`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                if (data.reparateurs.length === 0) {
+                    content.innerHTML = '<p>Aucun réparateur enregistré</p>';
+                    return;
+                }
+
+                let html = `
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Email</th>
+                                    <th>Téléphone</th>
+                                    <th>Téléphones flashés</th>
+                                    <th>Date inscription</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                data.reparateurs.forEach(rep => {
+                    html += `
+                        <tr>
+                            <td>${rep.nom_complet}</td>
+                            <td>${rep.email}</td>
+                            <td>${rep.numero_telephone}</td>
+                            <td>${rep.nombre_telephones || 0}</td>
+                            <td>${new Date(rep.date_inscription).toLocaleDateString()}</td>
+                            <td>
+                                <button onclick="blockReparateur(${rep.id})" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-ban"></i> Bloquer
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-muted">Total: ${data.reparateurs.length} réparateurs</p>
+                `;
+
+                content.innerHTML = html;
+
+            } catch (error) {
+                content.innerHTML = `
+                    <div class="notification error">
+                        Erreur: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // =============================================================
+        // FONCTIONS D'ACTION
+        // =============================================================
+
+        async function markAsRecovered(imei) {
+            if (!confirm('Marquer ce téléphone comme retrouvé ?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin/mark_recovered/${imei}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('blacklist-content', data.message, 'success');
+                    loadBlacklistData();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                showNotification('blacklist-content', 'Erreur: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteFromBlacklist(imei) {
+            if (!confirm('Supprimer définitivement ce téléphone de la blacklist ?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin/delete_blacklist/${imei}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('blacklist-content', data.message, 'success');
+                    loadBlacklistData();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                showNotification('blacklist-content', 'Erreur: ' + error.message, 'error');
+            }
+        }
+
+        async function blockReparateur(id) {
+            if (!confirm('Bloquer ce réparateur ?')) return;
+            
+            showNotification('reparateurs-content', 'Fonctionnalité en développement', 'info');
+        }
+
+        // =============================================================
         // GESTIONNAIRES D'ÉVÉNEMENTS
         // =============================================================
 
@@ -649,7 +543,15 @@
                     case 'reparateurs':
                         loadReparateursTab();
                         break;
-                    // ... autres onglets
+                    case 'utilisateurs':
+                        tabContent.innerHTML = `<div class="notification info">Gestion des utilisateurs - En développement</div>`;
+                        break;
+                    case 'statistiques':
+                        tabContent.innerHTML = `<div class="notification info">Statistiques avancées - En développement</div>`;
+                        break;
+                    case 'parametres':
+                        tabContent.innerHTML = `<div class="notification info">Paramètres système - En développement</div>`;
+                        break;
                     default:
                         tabContent.innerHTML = `<div class="notification info">Onglet en développement</div>`;
                 }
@@ -660,24 +562,6 @@
                     </div>
                 `;
             }
-        }
-
-        function loadRechercheTab() {
-            const tabContent = document.getElementById('tab-content');
-            tabContent.innerHTML = `
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Recherche avancée IMEI</h3>
-                    </div>
-                    <div class="form-group">
-                        <input type="text" id="imei-search" class="form-control" placeholder="Entrez l'IMEI (15 chiffres)" maxlength="15">
-                    </div>
-                    <button onclick="searchImei()" class="btn btn-primary">
-                        <i class="fas fa-search"></i> Rechercher
-                    </button>
-                    <div id="search-results" style="margin-top: 20px;"></div>
-                </div>
-            `;
         }
 
         async function searchImei() {
