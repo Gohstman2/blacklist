@@ -873,6 +873,337 @@ async function loadBlacklistData() {
         `;
     }
 }
+// =============================================================
+// FONCTIONS POUR CRÉER UN NOUVEAU RÉPARATEUR
+// =============================================================
+
+function loadReparateursTab() {
+    const tabContent = document.getElementById('tab-content');
+    if (!tabContent) return;
+    
+    tabContent.innerHTML = `
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Gestion des Réparateurs</h3>
+                <div>
+                    <button onclick="loadReparateursData()" class="btn btn-primary">
+                        <i class="fas fa-sync"></i> Actualiser
+                    </button>
+                    <button onclick="showCreateReparateurForm()" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Nouveau Réparateur
+                    </button>
+                </div>
+            </div>
+            <div id="reparateurs-content">
+                <div class="loading">
+                    <div class="loader"></div>
+                    <p>Chargement des réparateurs...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal pour créer un réparateur -->
+        <div id="create-reparateur-modal" class="modal hidden">
+            <div class="modal-content" style="max-width: 600px;">
+                <span class="close-modal" onclick="hideCreateReparateurForm()">&times;</span>
+                <h3 class="modal-title"><i class="fas fa-user-plus"></i> Créer un Nouveau Réparateur</h3>
+                <form id="create-reparateur-form" onsubmit="createReparateur(event)">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label for="new-nom-complet">Nom complet *</label>
+                            <input type="text" id="new-nom-complet" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-cnib">CNIB *</label>
+                            <input type="text" id="new-cnib" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-telephone">Numéro de téléphone *</label>
+                            <input type="text" id="new-telephone" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-telecom">Opérateur télécom *</label>
+                            <select id="new-telecom" class="form-control" required>
+                                <option value="">Sélectionner</option>
+                                <option value="Orange">Orange</option>
+                                <option value="MTN">MTN</option>
+                                <option value="Moov">Moov</option>
+                                <option value="Autre">Autre</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-email">Email *</label>
+                            <input type="email" id="new-email" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-password">Mot de passe *</label>
+                            <input type="password" id="new-password" class="form-control" required minlength="6">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="admin-key">Clé administrateur *</label>
+                        <input type="password" id="admin-key" class="form-control" required 
+                               placeholder="Clé secrète pour autoriser la création">
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="button" class="btn btn-secondary" onclick="hideCreateReparateurForm()">
+                            Annuler
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Créer le Réparateur
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    loadReparateursData();
+}
+
+function showCreateReparateurForm() {
+    const modal = document.getElementById('create-reparateur-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        // Reset du formulaire
+        document.getElementById('create-reparateur-form').reset();
+    }
+}
+
+function hideCreateReparateurForm() {
+    const modal = document.getElementById('create-reparateur-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+async function createReparateur(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalText = submitButton.innerHTML;
+    
+    // Récupérer les valeurs du formulaire
+    const reparateurData = {
+        nom_complet: document.getElementById('new-nom-complet').value,
+        cnib: document.getElementById('new-cnib').value,
+        numero_telephone: document.getElementById('new-telephone').value,
+        nom_telecom: document.getElementById('new-telecom').value,
+        email: document.getElementById('new-email').value,
+        mot_de_passe: document.getElementById('new-password').value,
+        admin_key: document.getElementById('admin-key').value
+    };
+    
+    // Validation basique
+    if (!reparateurData.admin_key) {
+        showNotification('reparateurs-content', 'La clé administrateur est requise', 'error');
+        return;
+    }
+    
+    // Afficher le loading
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création...';
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/create_reparateur`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(reparateurData)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('reparateurs-content', 'Réparateur créé avec succès !', 'success');
+            hideCreateReparateurForm();
+            loadReparateursData(); // Recharger la liste
+            
+            // Afficher l'ID unique généré
+            if (data.id_unique) {
+                setTimeout(() => {
+                    alert(`Réparateur créé avec succès !\nID Unique: ${data.id_unique}\n\nNotez cet ID pour le réparateur.`);
+                }, 500);
+            }
+        } else {
+            throw new Error(data.error || 'Erreur lors de la création');
+        }
+        
+    } catch (error) {
+        console.error('Erreur création réparateur:', error);
+        showNotification('reparateurs-content', 'Erreur: ' + error.message, 'error');
+    } finally {
+        // Restaurer le bouton
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalText;
+    }
+}
+
+// =============================================================
+// FONCTIONS DE GESTION SUPPLÉMENTAIRES POUR RÉPARATEURS
+// =============================================================
+
+async function viewReparateurDetails(id) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/reparateur/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            showReparateurDetailsModal(data.reparateur);
+        } else {
+            throw new Error('Réparateur non trouvé');
+        }
+    } catch (error) {
+        showNotification('reparateurs-content', 'Erreur: ' + error.message, 'error');
+    }
+}
+
+function showReparateurDetailsModal(reparateur) {
+    const modalContent = `
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close-modal" onclick="hideModal()">&times;</span>
+            <h3 class="modal-title">Détails du Réparateur</h3>
+            
+            <div style="margin: 20px 0;">
+                <div class="detail-item">
+                    <strong>Nom complet:</strong> ${reparateur.nom_complet || 'N/A'}
+                </div>
+                <div class="detail-item">
+                    <strong>Email:</strong> ${reparateur.email || 'N/A'}
+                </div>
+                <div class="detail-item">
+                    <strong>Téléphone:</strong> ${reparateur.numero_telephone || 'N/A'}
+                </div>
+                <div class="detail-item">
+                    <strong>CNIB:</strong> ${reparateur.cnib || 'N/A'}
+                </div>
+                <div class="detail-item">
+                    <strong>Opérateur:</strong> ${reparateur.nom_telecom || 'N/A'}
+                </div>
+                <div class="detail-item">
+                    <strong>Téléphones flashés:</strong> ${reparateur.nombre_telephones_flashes || 0}
+                </div>
+                <div class="detail-item">
+                    <strong>Date d'inscription:</strong> ${reparateur.date_inscription ? new Date(reparateur.date_inscription).toLocaleDateString() : 'N/A'}
+                </div>
+                ${reparateur.id_unique ? `
+                <div class="detail-item">
+                    <strong>ID Unique:</strong> <code>${reparateur.id_unique}</code>
+                </div>
+                ` : ''}
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button onclick="resetReparateurPassword(${reparateur.id})" class="btn btn-warning">
+                    <i class="fas fa-key"></i> Réinit. MDP
+                </button>
+                <button onclick="blockReparateur(${reparateur.id})" class="btn btn-danger">
+                    <i class="fas fa-ban"></i> Bloquer
+                </button>
+            </div>
+        </div>
+    `;
+    
+    showModal(modalContent);
+}
+
+async function resetReparateurPassword(id) {
+    if (!confirm('Réinitialiser le mot de passe de ce réparateur ?\n\nUn nouveau mot de passe aléatoire sera généré.')) return;
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/reset_reparateur_password/${id}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('reparateurs-content', 'Mot de passe réinitialisé avec succès', 'success');
+            if (data.new_password) {
+                alert(`Nouveau mot de passe: ${data.new_password}\n\nCommuniquez-le au réparateur.`);
+            }
+        } else {
+            throw new Error(data.error);
+        }
+    } catch (error) {
+        showNotification('reparateurs-content', 'Erreur: ' + error.message, 'error');
+    }
+}
+
+// =============================================================
+// FONCTIONS MODAL GÉNÉRIQUES
+// =============================================================
+
+function showModal(content) {
+    let modal = document.getElementById('custom-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'custom-modal';
+        modal.className = 'modal';
+        document.body.appendChild(modal);
+    }
+    
+    modal.innerHTML = content;
+    modal.classList.remove('hidden');
+}
+
+function hideModal() {
+    const modal = document.getElementById('custom-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// =============================================================
+// STYLE CSS POUR LES DÉTAILS
+// =============================================================
+
+const detailStyle = `
+    .detail-item {
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+    .detail-item:last-child {
+        border-bottom: none;
+    }
+    .detail-item strong {
+        display: inline-block;
+        width: 150px;
+        color: var(--dark-color);
+    }
+`;
+
+// Ajouter le style
+const styleSheet = document.createElement('style');
+styleSheet.textContent = detailStyle;
+document.head.appendChild(styleSheet);
+
+// =============================================================
+// EXPOSER LES NOUVELLES FONCTIONS GLOBALEMENT
+// =============================================================
+
+window.showCreateReparateurForm = showCreateReparateurForm;
+window.hideCreateReparateurForm = hideCreateReparateurForm;
+window.createReparateur = createReparateur;
+window.viewReparateurDetails = viewReparateurDetails;
+window.resetReparateurPassword = resetReparateurPassword;
+window.hideModal = hideModal;
 
 // =============================================================
 // FONCTIONS POUR L'ONGLET RÉPARATEURS
@@ -899,74 +1230,7 @@ function loadReparateursTab() {
         </div>
     `;
     
-    loadReparateursData();
-}
-
-async function loadReparateursData() {
-    const content = document.getElementById('reparateurs-content');
-    if (!content) return;
-    
-    content.innerHTML = `
-        <div class="loading">
-            <div class="loader"></div>
-            <p>Chargement des données...</p>
-        </div>
-    `;
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/admin/reparateurs`, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Erreur HTTP: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.error) {
-            throw new Error(data.error);
-        }
-
-        if (!data.reparateurs || data.reparateurs.length === 0) {
-            content.innerHTML = '<p class="notification info">Aucun réparateur enregistré</p>';
-            return;
-        }
-
-        let html = `
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nom complet</th>
-                            <th>Email</th>
-                            <th>Téléphone</th>
-                            <th>CNIB</th>
-                            <th>Téléphones flashés</th>
-                            <th>Date inscription</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-        `;
-
-        data.reparateurs.forEach(rep => {
-            html += `
-                <tr>
-                    <td>${rep.nom_complet || 'N/A'}</td>
-                    <td>${rep.email || 'N/A'}</td>
-                    <td>${rep.numero_telephone || 'N/A'}</td>
-                    <td>${rep.cnib || 'N/A'}</td>
-                    <td>${rep.nombre_telephones || 0}</td>
-                    <td>${rep.date_inscription ? new Date(rep.date_inscription).toLocaleDateString() : 'N/A'}</td>
-                    <td>
-                        <button onclick="blockReparateur(${rep.id})" class="btn btn-warning btn-sm">
-                            <i class="fas fa-ban"></i> Bloquer
-                        </button>
-                        <button onclick="viewReparateur(${rep.id})" class="btn btn-info btn-sm">
-                            <i class="fas fa-eye"></i> Voir
+     <i class="fas fa-eye"></i> Voir
                         </button>
                     </td>
                 </tr>
@@ -980,18 +1244,7 @@ async function loadReparateursData() {
             <p class="text-muted">Total: ${data.reparateurs.length} réparateurs</p>
         `;
 
-        content.innerHTML = html;
-
-    } catch (error) {
-        console.error('Erreur réparateurs:', error);
-        content.innerHTML = `
-            <div class="notification error">
-                Erreur: ${error.message}
-            </div>
-        `;
-    }
-}
-
+        
 // =============================================================
 // FONCTIONS POUR L'ONGLET UTILISATEURS
 // =============================================================
