@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLACKLIST - Suivi de Téléphones</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #e74c3c;
+            --accent-color: #3498db;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+            color: white;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            box-shadow: var(--box-shadow);
+            position: relative;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            margin-right: 15px;
+            color: var(--accent-color);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .repair-button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+        }
+
+        .repair-button i {
+            margin-right: 8px;
+        }
+
+        .repair-button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="password"] {
+            width: 100%;
+            padding: 14px 15px;
+            border: 2px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="password"]:focus {
+            border-color: var(--accent-color);
+            outline: none;
+        }
+
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        #search-btn {
+            background-color: var(--accent-color);
+            width: 100%;
+        }
+
+        #search-btn:hover {
+            background-color: #2980b9;
+        }
+
+        #blacklist-btn {
+            background-color: var(--secondary-color);
+            width: 100%;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #ddd;
+            z-index: 1;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ddd;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            transition: var(--transition);
+        }
+
+        .step.active .step-number {
+            background: var(--accent-color);
+        }
+
+        .step.completed .step-number {
+            background: var(--success-color);
+        }
+
+        .step-text {
+            font-size: 0.9rem;
+            text-align: center;
+            font-weight: 600;
+            color: #7f8c8d;
+        }
+
+        .step.active .step-text {
+            color: var(--accent-color);
+        }
+
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .btn-prev {
+            background-color: #7f8c8d;
+        }
+
+        .btn-next {
+            background-color: var(--accent-color);
+        }
+
+        .result-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: var(--dark-color);
+            display: inline-block;
+            width: 200px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .notification {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: var(--border-radius);
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .success {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .error {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: var(--secondary-color);
+            border: 1px solid var(--secondary-color);
+        }
+
+        .info {
+            background-color: rgba(52, 152, 219, 0.2);
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+        }
+
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--accent-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        /* Modal de connexion réparateurs */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 450px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        .whatsapp-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .whatsapp-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .logo {
+                margin-bottom: 15px;
+                justify-content: center;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .step-indicator {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .step {
+                flex-direction: row;
+                margin-bottom: 15px;
+            }
+            
+            .step-number {
+                margin-right: 15px;
+                margin-bottom: 0;
+            }
+            
+            .step-indicator::before {
+                display: none;
+            }
+            
+            .result-label {
+                width: 130px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <div>
+                    <h1>BLACKLIST</h1>
+                    <p class="subtitle">Votre téléphone perdu ou volé? Signalez-le rapidement</p>
+                </div>
+            </div>
+            <button class="repair-button" id="repair-btn">
+                <i class="fas fa-tools"></i> Espace Réparateurs
+            </button>
+        </header>
+
+        <!-- Indicateur d'étapes -->
+        <div class="step-indicator">
+            <div class="step active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-text">Recherche IMEI</div>
+            </div>
+            <div class="step" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-text">Résultats</div>
+            </div>
+            <div class="step" data-step="3">
+                <div class="step-number">3</div>
+                <div class="step-text">Blacklist</div>
+            </div>
+            <div class="step" data-step="4">
+                <div class="step-number">4</div>
+                <div class="step-text">Confirmation</div>
+            </div>
+        </div>
+
+        <!-- Étape 1: Recherche IMEI -->
+        <div class="card step-content active" id="step-1">
+            <h2 class="card-title">Recherche de téléphone</h2>
+            <p>Entrez le numéro IMEI de votre téléphone pour vérifier s'il a été signalé.</p>
+            
+            <div class="form-group">
+                <label for="imei-search">IMEI du téléphone :</label>
+                <input type="number" id="imei-search" placeholder="Entrez les 15 chiffres de l'IMEI">
+            </div>
+            
+            <button id="search-btn">Rechercher</button>
+        </div>
+
+        <!-- Étape 2: Résultats -->
+        <div class="card step-content" id="step-2">
+            <h2 class="card-title">Résultats de la recherche</h2>
+            <div id="loader" class="loader hidden"></div>
+            
+            <div id="phone-info">
+                <div class="result-item">
+                    <span class="result-label">Marque :</span>
+                    <span id="phone-brand"></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">IMEI :</span>
+                    <span id="phone-imei"></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Personne qui a flashé :</span>
+                    <span id="reporter-name"></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Opérateur :</span>
+                    <span id="phone-carrier"></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Numéro :</span>
+                    <span id="reporter-phone"></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">CNIB :</span>
+                    <span id="reporter-cnib"></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Autre pièce :</span>
+                    <span id="other-id"></span>
+                </div>
+            </div>
+            
+            <div id="no-results" class="hidden">
+                <div class="notification info">
+                    Votre téléphone n'a pas été tracé. Veuillez procéder au BLACKLIST.
+                </div>
+                
+                <div class="navigation-buttons">
+                    <button class="btn-prev">Précédent</button>
+                    <button class="btn-next">Blacklister</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Étape 3: Formulaire BLACKLIST -->
+        <div class="card step-content" id="step-3">
+            <h2 class="card-title">Formulaire BLACKLIST</h2>
+            
+            <form id="blacklist-form">
+                <div class="form-group">
+                    <label for="imei">IMEI du téléphone :</label>
+                    <input type="number" id="imei" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="brand">Marque :</label>
+                    <input type="text" id="brand" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="name">Votre nom complet :</label>
+                    <input type="text" id="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Votre numéro :</label>
+                    <input type="text" id="phone" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cnib">CNIB :</label>
+                    <input type="text" id="cnib" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="other-document">Autre pièce d'identité :</label>
+                    <input type="text" id="other-document">
+                </div>
+                
+                <div class="navigation-buttons">
+                    <button type="button" class="btn-prev">Précédent</button>
+                    <button type="submit" id="blacklist-btn">BLACKLIST</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Étape 4: Confirmation -->
+        <div class="card step-content" id="step-4">
+            <h2 class="card-title">Confirmation</h2>
+            
+            <div class="notification success">
+                <i class="fas fa-check-circle"></i> Votre téléphone a été ajouté à la BLACKLIST avec succès!
+            </div>
+            
+            <div class="result-item">
+                <span class="result-label">Référence :</span>
+                <span id="reference-number">BL-28569-2023</span>
+            </div>
+            
+            <p>Votre signalement a été enregistré dans notre base de données. Vous recevrez un SMS de confirmation sous peu.</p>
+            
+            <div class="navigation-buttons">
+                <button id="new-search">Nouvelle recherche</button>
+            </div>
+        </div>
+
+        <div id="notification-area"></div>
+    </div>
+
+    <footer>
+        <p>BLACKLIST &copy; 2023 - Tous droits réservés</p>
+    </footer>
+
+    <!-- Modal de connexion réparateurs -->
+    <div class="modal" id="repair-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 class="modal-title">Espace Réparateurs</h2>
+            
+            <form id="repair-login-form">
+                <div class="form-group">
+                    <label for="login-email">Email :</label>
+                    <input type="text" id="login-email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="login-password">Mot de passe :</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                
+                <button type="submit">Se connecter</button>
+            </form>
+            
+            <a href="https://wa.me/1234567890" class="whatsapp-link" target="_blank">
+                <i class="fab fa-whatsapp"></i> Créer un compte via WhatsApp
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Références aux éléments DOM
+            const repairBtn = document.getElementById('repair-btn');
+            const repairModal = document.getElementById('repair-modal');
+            const closeModal = document.querySelector('.close-modal');
+            const loginForm = document.getElementById('repair-login-form');
+            
+            const steps = document.querySelectorAll('.step');
+            const stepContents = document.querySelectorAll('.step-content');
+            const prevButtons = document.querySelectorAll('.btn-prev');
+            const nextButtons = document.querySelectorAll('.btn-next');
+            
+            const imeiSearchInput = document.getElementById('imei-search');
+            const searchBtn = document.getElementById('search-btn');
+            const loader = document.getElementById('loader');
+            const phoneInfo = document.getElementById('phone-info');
+            const noResults = document.getElementById('no-results');
+            const blacklistForm = document.getElementById('blacklist-form');
+            const newSearchBtn = document.getElementById('new-search');
+            
+            let currentStep = 1;
+            
+            // Ouvrir le modal réparateurs
+            repairBtn.addEventListener('click', function() {
+                repairModal.style.display = 'flex';
+            });
+            
+            // Fermer le modal réparateurs
+            closeModal.addEventListener('click', function() {
+                repairModal.style.display = 'none';
+            });
+            
+            // Fermer le modal si on clique à l'extérieur
+            window.addEventListener('click', function(e) {
+                if (e.target === repairModal) {
+                    repairModal.style.display = 'none';
+                }
+            });
+            
+            // Soumission du formulaire de connexion réparateurs
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                
+                // Ici, vous enverriez normalement ces données à votre serveur
+                console.log("Tentative de connexion:", email, password);
+                
+                // Simulation de connexion réussie
+                alert("Connexion réussie! Redirection vers le dashboard...");
+                repairModal.style.display = 'none';
+                
+                // En réalité, vous redirigeriez vers le dashboard
+                // window.location.href = "dashboard.html";
+            });
+            
+            // Navigation entre les étapes
+            function updateSteps(stepNumber) {
+                // Mettre à jour les indicateurs d'étape
+                steps.forEach(step => {
+                    if (parseInt(step.dataset.step) === stepNumber) {
+                        step.classList.add('active');
+                    } else if (parseInt(step.dataset.step) < stepNumber) {
+                        step.classList.remove('active');
+                        step.classList.add('completed');
+                    } else {
+                        step.classList.remove('active', 'completed');
+                    }
+                });
+                
+                // Afficher le contenu de l'étape active
+                stepContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === `step-${stepNumber}`) {
+                        content.classList.add('active');
+                    }
+                });
+                
+                currentStep = stepNumber;
+            }
+            
+            // Boutons Précédent
+            prevButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (currentStep > 1) {
+                        updateSteps(currentStep - 1);
+                    }
+                });
+            });
+            
+            // Boutons Suivant
+            nextButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (currentStep < 4) {
+                        updateSteps(currentStep + 1);
+                    }
+                });
+            });
+            
+            // Événement de recherche
+            searchBtn.addEventListener('click', function() {
+                const imei = imeiSearchInput.value.trim();
+                
+                if (imei.length !== 15 || isNaN(imei)) {
+                    showNotification('Veuillez entrer un numéro IMEI valide (15 chiffres)', 'error');
+                    return;
+                }
+                
+                // Afficher le loader
+                loader.classList.remove('hidden');
+                phoneInfo.classList.add('hidden');
+                noResults.classList.add('hidden');
+                
+                // Simuler la communication avec le serveur
+                setTimeout(() => {
+                    checkImeiInDatabase(imei);
+                }, 1500);
+            });
+            
+            // Soumission du formulaire BLACKLIST
+            blacklistForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const imei = document.getElementById('imei').value;
+                const brand = document.getElementById('brand').value;
+                const name = document.getElementById('name').value;
+                const phone = document.getElementById('phone').value;
+                const cnib = document.getElementById('cnib').value;
+                const otherDocument = document.getElementById('other-document').value;
+                
+                // Simuler l'envoi au serveur
+                setTimeout(() => {
+                    updateSteps(4);
+                }, 1000);
+            });
+            
+            // Nouvelle recherche
+            newSearchBtn.addEventListener('click', function() {
+                // Réinitialiser le formulaire
+                imeiSearchInput.value = '';
+                blacklistForm.reset();
+                
+                // Retourner à l'étape 1
+                updateSteps(1);
+            });
+            
+            // Fonction pour vérifier l'IMEI dans la base de données (simulée)
+            function checkImeiInDatabase(imei) {
+                // Simuler une réponse aléatoire du serveur (80% de chance que le téléphone ne soit pas trouvé)
+                const phoneFound = Math.random() > 0.5;
+                
+                loader.classList.add('hidden');
+                
+                if (imei=="123456789123456") {
+                    // Afficher les informations du téléphone
+                    phoneInfo.classList.remove('hidden');
+                    
+                    // Remplir avec des données simulées
+                    document.getElementById('phone-brand').textContent = getRandomBrand();
+                    document.getElementById('phone-imei').textContent = imei;
+                    document.getElementById('reporter-name').textContent = getRandomName();
+                    document.getElementById('phone-carrier').textContent = getRandomCarrier();
+                    document.getElementById('reporter-phone').textContent = getRandomPhoneNumber();
+                    document.getElementById('reporter-cnib').textContent = getRandomCNIB();
+                    document.getElementById('other-id').textContent = getRandomID();
+                    
+                    showNotification('Téléphone trouvé dans notre base de données!', 'success');
+                } else {
+                    // Afficher le formulaire BLACKLIST
+                    noResults.classList.remove('hidden');
+                    document.getElementById('imei').value = imei;
+                    
+                    showNotification('Aucune information trouvée pour cet IMEI.', 'info');
+                }
+                
+                // Passer à l'étape suivante
+                updateSteps(2);
+            }
+            
+            // Fonction pour afficher les notifications
+            function showNotification(message, type) {
+                const notificationArea = document.getElementById('notification-area');
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+                
+                notificationArea.appendChild(notification);
+                
+                // Supprimer la notification après 5 secondes
+                setTimeout(() => {
+                    notification.remove();
+                }, 5000);
+            }
+            
+            // Fonctions utilitaires pour générer des données aléatoires (simulation)
+            function getRandomBrand() {
+                const brands = ['Samsung', 'Apple', 'Huawei', 'Xiaomi', 'Nokia', 'Google', 'OnePlus'];
+                return brands[Math.floor(Math.random() * brands.length)];
+            }
+            
+            function getRandomName() {
+                const names = ['Jean Dupont', 'Marie Lambert', 'Paul Martin', 'Sophie Klein', 'Luc Moreau'];
+                return names[Math.floor(Math.random() * names.length)];
+            }
+            
+            function getRandomCarrier() {
+                const carriers = ['Orange', 'Free', 'SFR', 'Bouygues Telecom', 'La Poste Mobile'];
+                return carriers[Math.floor(Math.random() * carriers.length)];
+            }
+            
+            function getRandomPhoneNumber() {
+                return '06' + Math.floor(10000000 + Math.random() * 90000000);
+            }
+            
+            function getRandomCNIB() {
+                return 'CI' + Math.floor(100000000 + Math.random() * 900000000);
+            }
+            
+            function getRandomID() {
+                return 'Passeport: ' + Math.floor(100000000 + Math.random() * 900000000);
+            }
+        });
+    </script>
+</body>
+</html>
