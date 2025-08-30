@@ -1205,44 +1205,7 @@ window.viewReparateurDetails = viewReparateurDetails;
 window.resetReparateurPassword = resetReparateurPassword;
 window.hideModal = hideModal;
 
-// =============================================================
-// FONCTIONS POUR L'ONGLET RÉPARATEURS
-// =============================================================
 
-function loadReparateursTab() {
-    const tabContent = document.getElementById('tab-content');
-    if (!tabContent) return;
-    
-    tabContent.innerHTML = `
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Gestion des Réparateurs</h3>
-                <button onclick="loadReparateursData()" class="btn btn-primary">
-                    <i class="fas fa-sync"></i> Actualiser
-                </button>
-            </div>
-            <div id="reparateurs-content">
-                <div class="loading">
-                    <div class="loader"></div>
-                    <p>Chargement des réparateurs...</p>
-                </div>
-            </div>
-        </div>
-    `;
-    
-     <i class="fas fa-eye"></i> Voir
-                        </button>
-                    </td>
-                </tr>
-            `;
-        });
-
-        html += `
-                    </tbody>
-                </table>
-            </div>
-            <p class="text-muted">Total: ${data.reparateurs.length} réparateurs</p>
-        `;
 
         
 // =============================================================
