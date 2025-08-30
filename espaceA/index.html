@@ -5,10 +5,332 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - BLACKLIST</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js depuis un CDN fiable -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* ... (VOTRE CSS EXISTANT) ... */
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #e74c3c;
+            --accent-color: #3498db;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: var(--primary-color);
+            color: white;
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header h2 {
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 20px 0;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu a {
+            display: block;
+            padding: 12px 20px;
+            color: #ddd;
+            text-decoration: none;
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left-color: var(--accent-color);
+        }
+
+        .sidebar-menu i {
+            width: 25px;
+            margin-right: 10px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-weight: 600;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: var(--box-shadow);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light-color);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: var(--light-color);
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+            outline: none;
+        }
+
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .notification {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+        }
+
+        .success {
+            background: rgba(46, 204, 113, 0.2);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .error {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--danger-color);
+            border: 1px solid var(--danger-color);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--accent-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -41,41 +363,54 @@
 
     <!-- Dashboard Admin -->
     <div id="admin-dashboard" class="admin-container hidden">
-        <!-- ... (VOTRE HTML EXISTANT) ... -->
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-shield-alt"></i> ADMIN</h2>
+                <p>Panel de contrôle</p>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li><a href="#dashboard" class="active" data-tab="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="#recherche" data-tab="recherche"><i class="fas fa-search"></i> Recherche IMEI</a></li>
+                <li><a href="#blacklist" data-tab="blacklist"><i class="fas fa-ban"></i> Blacklist</a></li>
+                <li><a href="#reparateurs" data-tab="reparateurs"><i class="fas fa-tools"></i> Réparateurs</a></li>
+                <li><a href="#utilisateurs" data-tab="utilisateurs"><i class="fas fa-users"></i> Utilisateurs</a></li>
+                <li><a href="#statistiques" data-tab="statistiques"><i class="fas fa-chart-bar"></i> Statistiques</a></li>
+                <li><a href="#parametres" data-tab="parametres"><i class="fas fa-cog"></i> Paramètres</a></li>
+                <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1>Panel d'Administration</h1>
+                <div id="admin-info">
+                    <span>Connecté en tant que <strong>admin</strong></span>
+                </div>
+            </div>
+
+            <!-- Contenu des différents onglets -->
+            <div id="tab-content">
+                <!-- Le contenu sera chargé dynamiquement -->
+                <div class="loading">
+                    <div class="loader"></div>
+                    <p>Chargement du dashboard...</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Configuration de l'API - Utilisez l'URL correcte
-        const API_BASE_URL = window.location.hostname === 'localhost' 
-            ? 'http://localhost:5000/api' 
-            : 'https://sendfiles.pythonanywhere.com/api';
-
+        const API_BASE_URL = 'https://sendfiles.pythonanywhere.com/api';
         let authToken = null;
-
-        // =============================================================
-        // INITIALISATION AU CHARGEMENT COMPLET
-        // =============================================================
-
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM complètement chargé');
-            
-            // Ajouter les event listeners après que le DOM soit chargé
-            const loginForm = document.getElementById('login-form');
-            if (loginForm) {
-                loginForm.addEventListener('submit', handleLogin);
-            } else {
-                console.error('Formulaire de login non trouvé');
-            }
-
-            // Vérifier l'authentification existante
-            checkAuth();
-        });
 
         // =============================================================
         // FONCTIONS D'AUTHENTIFICATION
         // =============================================================
 
-        async function handleLogin(e) {
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const username = document.getElementById('username').value;
@@ -94,11 +429,6 @@
                     body: JSON.stringify({ username, password })
                 });
                 
-                // Vérifier si la réponse est OK
-                if (!response.ok) {
-                    throw new Error(`Erreur HTTP: ${response.status}`);
-                }
-                
                 const data = await response.json();
                 
                 if (data.success) {
@@ -106,26 +436,19 @@
                     localStorage.setItem('admin_token', authToken);
                     showAdminDashboard();
                 } else {
-                    showNotification('login-notification', data.error || 'Identifiants incorrects', 'error');
+                    showNotification('login-notification', data.error, 'error');
                 }
             } catch (error) {
-                console.error('Erreur de connexion:', error);
-                showNotification('login-notification', 'Erreur de connexion au serveur', 'error');
+                showNotification('login-notification', 'Erreur de connexion', 'error');
             } finally {
                 button.disabled = false;
                 button.textContent = 'Se connecter';
             }
-        }
+        });
 
         function showAdminDashboard() {
-            const loginPage = document.getElementById('login-page');
-            const adminDashboard = document.getElementById('admin-dashboard');
-            
-            if (loginPage) loginPage.classList.add('hidden');
-            if (adminDashboard) adminDashboard.classList.remove('hidden');
-            
-            // Ajouter les event listeners pour le dashboard
-            setupDashboardEvents();
+            document.getElementById('login-page').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.remove('hidden');
             loadDashboard();
         }
 
@@ -137,46 +460,8 @@
             }
         }
 
-        // =============================================================
-        // CONFIGURATION DES ÉVÉNEMENTS DU DASHBOARD
-        // =============================================================
-
-        function setupDashboardEvents() {
-            // Navigation dans le sidebar
-            const sidebarLinks = document.querySelectorAll('.sidebar-menu a[data-tab]');
-            if (sidebarLinks.length > 0) {
-                sidebarLinks.forEach(link => {
-                    link.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        
-                        // Mettre à jour la classe active
-                        document.querySelectorAll('.sidebar-menu a').forEach(a => {
-                            a.classList.remove('active');
-                        });
-                        this.classList.add('active');
-                        
-                        const tab = this.getAttribute('data-tab');
-                        loadTab(tab);
-                    });
-                });
-            }
-
-            // Déconnexion
-            const logoutBtn = document.getElementById('logout-btn');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    localStorage.removeItem('admin_token');
-                    authToken = null;
-                    
-                    const adminDashboard = document.getElementById('admin-dashboard');
-                    const loginPage = document.getElementById('login-page');
-                    
-                    if (adminDashboard) adminDashboard.classList.add('hidden');
-                    if (loginPage) loginPage.classList.remove('hidden');
-                });
-            }
-        }
+        // Vérifier l'authentification au chargement
+        checkAuth();
 
         // =============================================================
         // FONCTIONS DE GESTION DE L'INTERFACE
@@ -184,32 +469,19 @@
 
         function showNotification(containerId, message, type) {
             const container = document.getElementById(containerId);
-            if (!container) {
-                console.error('Container de notification non trouvé:', containerId);
-                return;
-            }
-            
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
-            notification.innerHTML = `
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
-                ${message}
-            `;
-            
+            notification.textContent = message;
             container.innerHTML = '';
             container.appendChild(notification);
             
             setTimeout(() => {
-                if (notification.parentNode === container) {
-                    notification.remove();
-                }
+                notification.remove();
             }, 5000);
         }
 
         async function loadDashboard() {
             const tabContent = document.getElementById('tab-content');
-            if (!tabContent) return;
-            
             tabContent.innerHTML = `
                 <div class="loading">
                     <div class="loader"></div>
@@ -224,10 +496,6 @@
                     }
                 });
                 
-                if (!response.ok) {
-                    throw new Error(`Erreur HTTP: ${response.status}`);
-                }
-                
                 const data = await response.json();
                 
                 if (data.error) {
@@ -236,7 +504,6 @@
 
                 renderDashboard(data);
             } catch (error) {
-                console.error('Erreur dashboard:', error);
                 tabContent.innerHTML = `
                     <div class="notification error">
                         Erreur lors du chargement: ${error.message}
@@ -247,24 +514,23 @@
 
         function renderDashboard(stats) {
             const tabContent = document.getElementById('tab-content');
-            if (!tabContent) return;
             
             tabContent.innerHTML = `
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-number">${stats.blacklist || 0}</div>
+                        <div class="stat-number">${stats.blacklist}</div>
                         <div class="stat-label">Téléphones blacklistés</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">${stats.unlocked || 0}</div>
+                        <div class="stat-number">${stats.unlocked}</div>
                         <div class="stat-label">Téléphones flashés</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">${stats.reparateurs || 0}</div>
+                        <div class="stat-number">${stats.reparateurs}</div>
                         <div class="stat-label">Réparateurs</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">${stats.retrouves || 0}</div>
+                        <div class="stat-number">${stats.retrouves}</div>
                         <div class="stat-label">Téléphones retrouvés</div>
                     </div>
                 </div>
@@ -291,10 +557,10 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                ${(stats.top_reparateurs || []).map(rep => `
+                                ${stats.top_reparateurs.map(rep => `
                                     <tr>
-                                        <td>${rep.nom_complet || 'N/A'}</td>
-                                        <td>${rep.telephones_flashes || 0}</td>
+                                        <td>${rep.nom_complet}</td>
+                                        <td>${rep.telephones_flashes}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -303,47 +569,101 @@
                 </div>
             `;
 
-            // Vérifier que Chart est disponible avant d'initialiser
-            if (typeof Chart !== 'undefined') {
-                initCharts(stats);
-            } else {
-                console.error('Chart.js non chargé');
-            }
+            // Initialiser les graphiques
+            initCharts(stats);
         }
 
         function initCharts(stats) {
-            try {
-                const monthlyCtx = document.getElementById('monthlyChart');
-                if (!monthlyCtx) return;
-                
-                new Chart(monthlyCtx.getContext('2d'), {
-                    type: 'bar',
-                    data: {
-                        labels: (stats.stats_mois || []).map(s => s.mois || ''),
-                        datasets: [{
-                            label: 'Signalements par mois',
-                            data: (stats.stats_mois || []).map(s => s.nombre || 0),
-                            backgroundColor: '#3498db'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false
-                    }
-                });
-            } catch (error) {
-                console.error('Erreur initialisation graphique:', error);
-            }
+            // Graphique mensuel
+            const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+            new Chart(monthlyCtx, {
+                type: 'bar',
+                data: {
+                    labels: stats.stats_mois.map(s => s.mois),
+                    datasets: [{
+                        label: 'Signalements par mois',
+                        data: stats.stats_mois.map(s => s.nombre),
+                        backgroundColor: '#3498db'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
         }
 
         // =============================================================
-        // FONCTIONS POUR LES DIFFÉRENTS ONGLETS
+        // GESTIONNAIRES D'ÉVÉNEMENTS
         // =============================================================
+
+        // Navigation dans le sidebar
+        document.querySelectorAll('.sidebar-menu a[data-tab]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Mettre à jour la classe active
+                document.querySelectorAll('.sidebar-menu a').forEach(a => {
+                    a.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                const tab = this.getAttribute('data-tab');
+                loadTab(tab);
+            });
+        });
+
+        // Déconnexion
+        document.getElementById('logout-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('admin_token');
+            authToken = null;
+            document.getElementById('admin-dashboard').classList.add('hidden');
+            document.getElementById('login-page').classList.remove('hidden');
+        });
+
+        // =============================================================
+        // CHARGEMENT DES ONGLETS
+        // =============================================================
+
+        async function loadTab(tabName) {
+            const tabContent = document.getElementById('tab-content');
+            tabContent.innerHTML = `
+                <div class="loading">
+                    <div class="loader"></div>
+                    <p>Chargement...</p>
+                </div>
+            `;
+
+            try {
+                switch(tabName) {
+                    case 'dashboard':
+                        await loadDashboard();
+                        break;
+                    case 'recherche':
+                        loadRechercheTab();
+                        break;
+                    case 'blacklist':
+                        loadBlacklistTab();
+                        break;
+                    case 'reparateurs':
+                        loadReparateursTab();
+                        break;
+                    // ... autres onglets
+                    default:
+                        tabContent.innerHTML = `<div class="notification info">Onglet en développement</div>`;
+                }
+            } catch (error) {
+                tabContent.innerHTML = `
+                    <div class="notification error">
+                        Erreur: ${error.message}
+                    </div>
+                `;
+            }
+        }
 
         function loadRechercheTab() {
             const tabContent = document.getElementById('tab-content');
-            if (!tabContent) return;
-            
             tabContent.innerHTML = `
                 <div class="card">
                     <div class="card-header">
@@ -352,7 +672,7 @@
                     <div class="form-group">
                         <input type="text" id="imei-search" class="form-control" placeholder="Entrez l'IMEI (15 chiffres)" maxlength="15">
                     </div>
-                    <button onclick="adminSearchImei()" class="btn btn-primary">
+                    <button onclick="searchImei()" class="btn btn-primary">
                         <i class="fas fa-search"></i> Rechercher
                     </button>
                     <div id="search-results" style="margin-top: 20px;"></div>
@@ -360,19 +680,9 @@
             `;
         }
 
-        // ... (LES AUTRES FONCTIONS RESTENT LES MÊMES) ...
-
-        // =============================================================
-        // FONCTION DE RECHERCHE IMEI (CORRIGÉE)
-        // =============================================================
-
-        async function adminSearchImei() {
-            const imeiInput = document.getElementById('imei-search');
+        async function searchImei() {
+            const imei = document.getElementById('imei-search').value;
             const resultsContainer = document.getElementById('search-results');
-            
-            if (!imeiInput || !resultsContainer) return;
-            
-            const imei = imeiInput.value.trim();
             
             if (imei.length !== 15) {
                 resultsContainer.innerHTML = `
@@ -398,10 +708,6 @@
                     body: JSON.stringify({ imei })
                 });
                 
-                if (!response.ok) {
-                    throw new Error(`Erreur HTTP: ${response.status}`);
-                }
-                
                 const data = await response.json();
                 
                 if (data.error) {
@@ -414,21 +720,21 @@
                 if (data.blacklist) {
                     html += `
                         <h5>📱 Blacklisté</h5>
-                        <p><strong>Marque:</strong> ${data.blacklist.marque || 'N/A'}</p>
-                        <p><strong>Propriétaire:</strong> ${data.blacklist.nom_complet || 'N/A'}</p>
-                        <p><strong>CNIB:</strong> ${data.blacklist.cnib || 'N/A'}</p>
-                        <p><strong>Date signalement:</strong> ${data.blacklist.date_signalement ? new Date(data.blacklist.date_signalement).toLocaleDateString() : 'N/A'}</p>
+                        <p><strong>Marque:</strong> ${data.blacklist.marque}</p>
+                        <p><strong>Propriétaire:</strong> ${data.blacklist.nom_complet}</p>
+                        <p><strong>CNIB:</strong> ${data.blacklist.cnib}</p>
+                        <p><strong>Date signalement:</strong> ${new Date(data.blacklist.date_signalement).toLocaleDateString()}</p>
                     `;
                 }
                 
                 if (data.unlocked) {
                     html += `
                         <h5>🔧 Flashé par un réparateur</h5>
-                        <p><strong>Marque:</strong> ${data.unlocked.marque || 'N/A'}</p>
-                        <p><strong>Personne:</strong> ${data.unlocked.nom_personne || 'N/A'}</p>
-                        <p><strong>Réparateur:</strong> ${data.unlocked.nom_reparateur || 'N/A'}</p>
-                        <p><strong>Contact réparateur:</strong> ${data.unlocked.email_reparateur || 'N/A'}</p>
-                        <p><strong>Date flash:</strong> ${data.unlocked.date_ajout ? new Date(data.unlocked.date_ajout).toLocaleDateString() : 'N/A'}</p>
+                        <p><strong>Marque:</strong> ${data.unlocked.marque}</p>
+                        <p><strong>Personne:</strong> ${data.unlocked.nom_personne}</p>
+                        <p><strong>Réparateur:</strong> ${data.unlocked.nom_reparateur}</p>
+                        <p><strong>Contact réparateur:</strong> ${data.unlocked.email_reparateur}</p>
+                        <p><strong>Date flash:</strong> ${new Date(data.unlocked.date_ajout).toLocaleDateString()}</p>
                     `;
                 }
                 
@@ -440,16 +746,16 @@
                 resultsContainer.innerHTML = html;
                 
             } catch (error) {
-                console.error('Erreur recherche IMEI:', error);
                 resultsContainer.innerHTML = `
                     <div class="notification error">Erreur: ${error.message}</div>
                 `;
             }
         }
 
-        // Exposer la fonction globalement pour les onclick
-        window.adminSearchImei = adminSearchImei;
-
+        // Charger le dashboard par défaut
+        if (authToken) {
+            loadDashboard();
+        }
     </script>
 </body>
 </html>
