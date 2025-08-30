@@ -5,23 +5,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - BLACKLIST</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js depuis un CDN fiable -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <style>
-        /* ... (VOTRE CSS EXISTANT RESTE IDENTIQUE) ... */
+        /* ... (VOTRE CSS EXISTANT) ... */
     </style>
 </head>
 <body>
-    <!-- ... (VOTRE HTML EXISTANT RESTE IDENTIQUE) ... -->
+    <!-- Page de connexion -->
+    <div id="login-page" class="login-container">
+        <div class="login-card">
+            <h2 style="text-align: center; margin-bottom: 30px; color: var(--primary-color);">
+                <i class="fas fa-lock"></i> Admin BLACKLIST
+            </h2>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Nom d'utilisateur :</label>
+                    <input type="text" id="username" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Mot de passe :</label>
+                    <input type="password" id="password" class="form-control" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px;">
+                    Se connecter
+                </button>
+            </form>
+            
+            <div id="login-notification"></div>
+        </div>
+    </div>
+
+    <!-- Dashboard Admin -->
+    <div id="admin-dashboard" class="admin-container hidden">
+        <!-- ... (VOTRE HTML EXISTANT) ... -->
+    </div>
 
     <script>
-        const API_BASE_URL = 'https://sendfiles.pythonanywhere.com/api';
+        // Configuration de l'API - Utilisez l'URL correcte
+        const API_BASE_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:5000/api' 
+            : 'https://sendfiles.pythonanywhere.com/api';
+
         let authToken = null;
+
+        // =============================================================
+        // INITIALISATION AU CHARGEMENT COMPLET
+        // =============================================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM complètement chargé');
+            
+            // Ajouter les event listeners après que le DOM soit chargé
+            const loginForm = document.getElementById('login-form');
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleLogin);
+            } else {
+                console.error('Formulaire de login non trouvé');
+            }
+
+            // Vérifier l'authentification existante
+            checkAuth();
+        });
 
         // =============================================================
         // FONCTIONS D'AUTHENTIFICATION
         // =============================================================
 
-        document.getElementById('login-form').addEventListener('submit', async function(e) {
+        async function handleLogin(e) {
             e.preventDefault();
             
             const username = document.getElementById('username').value;
@@ -40,6 +94,11 @@
                     body: JSON.stringify({ username, password })
                 });
                 
+                // Vérifier si la réponse est OK
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.success) {
@@ -47,19 +106,26 @@
                     localStorage.setItem('admin_token', authToken);
                     showAdminDashboard();
                 } else {
-                    showNotification('login-notification', data.error, 'error');
+                    showNotification('login-notification', data.error || 'Identifiants incorrects', 'error');
                 }
             } catch (error) {
-                showNotification('login-notification', 'Erreur de connexion', 'error');
+                console.error('Erreur de connexion:', error);
+                showNotification('login-notification', 'Erreur de connexion au serveur', 'error');
             } finally {
                 button.disabled = false;
                 button.textContent = 'Se connecter';
             }
-        });
+        }
 
         function showAdminDashboard() {
-            document.getElementById('login-page').classList.add('hidden');
-            document.getElementById('admin-dashboard').classList.remove('hidden');
+            const loginPage = document.getElementById('login-page');
+            const adminDashboard = document.getElementById('admin-dashboard');
+            
+            if (loginPage) loginPage.classList.add('hidden');
+            if (adminDashboard) adminDashboard.classList.remove('hidden');
+            
+            // Ajouter les event listeners pour le dashboard
+            setupDashboardEvents();
             loadDashboard();
         }
 
@@ -71,8 +137,46 @@
             }
         }
 
-        // Vérifier l'authentification au chargement
-        checkAuth();
+        // =============================================================
+        // CONFIGURATION DES ÉVÉNEMENTS DU DASHBOARD
+        // =============================================================
+
+        function setupDashboardEvents() {
+            // Navigation dans le sidebar
+            const sidebarLinks = document.querySelectorAll('.sidebar-menu a[data-tab]');
+            if (sidebarLinks.length > 0) {
+                sidebarLinks.forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        
+                        // Mettre à jour la classe active
+                        document.querySelectorAll('.sidebar-menu a').forEach(a => {
+                            a.classList.remove('active');
+                        });
+                        this.classList.add('active');
+                        
+                        const tab = this.getAttribute('data-tab');
+                        loadTab(tab);
+                    });
+                });
+            }
+
+            // Déconnexion
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    localStorage.removeItem('admin_token');
+                    authToken = null;
+                    
+                    const adminDashboard = document.getElementById('admin-dashboard');
+                    const loginPage = document.getElementById('login-page');
+                    
+                    if (adminDashboard) adminDashboard.classList.add('hidden');
+                    if (loginPage) loginPage.classList.remove('hidden');
+                });
+            }
+        }
 
         // =============================================================
         // FONCTIONS DE GESTION DE L'INTERFACE
@@ -80,19 +184,32 @@
 
         function showNotification(containerId, message, type) {
             const container = document.getElementById(containerId);
+            if (!container) {
+                console.error('Container de notification non trouvé:', containerId);
+                return;
+            }
+            
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
-            notification.textContent = message;
+            notification.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+                ${message}
+            `;
+            
             container.innerHTML = '';
             container.appendChild(notification);
             
             setTimeout(() => {
-                notification.remove();
+                if (notification.parentNode === container) {
+                    notification.remove();
+                }
             }, 5000);
         }
 
         async function loadDashboard() {
             const tabContent = document.getElementById('tab-content');
+            if (!tabContent) return;
+            
             tabContent.innerHTML = `
                 <div class="loading">
                     <div class="loader"></div>
@@ -107,6 +224,10 @@
                     }
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.error) {
@@ -115,6 +236,7 @@
 
                 renderDashboard(data);
             } catch (error) {
+                console.error('Erreur dashboard:', error);
                 tabContent.innerHTML = `
                     <div class="notification error">
                         Erreur lors du chargement: ${error.message}
@@ -125,23 +247,24 @@
 
         function renderDashboard(stats) {
             const tabContent = document.getElementById('tab-content');
+            if (!tabContent) return;
             
             tabContent.innerHTML = `
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-number">${stats.blacklist}</div>
+                        <div class="stat-number">${stats.blacklist || 0}</div>
                         <div class="stat-label">Téléphones blacklistés</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">${stats.unlocked}</div>
+                        <div class="stat-number">${stats.unlocked || 0}</div>
                         <div class="stat-label">Téléphones flashés</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">${stats.reparateurs}</div>
+                        <div class="stat-number">${stats.reparateurs || 0}</div>
                         <div class="stat-label">Réparateurs</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">${stats.retrouves}</div>
+                        <div class="stat-number">${stats.retrouves || 0}</div>
                         <div class="stat-label">Téléphones retrouvés</div>
                     </div>
                 </div>
@@ -168,10 +291,10 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                ${stats.top_reparateurs.map(rep => `
+                                ${(stats.top_reparateurs || []).map(rep => `
                                     <tr>
-                                        <td>${rep.nom_complet}</td>
-                                        <td>${rep.telephones_flashes}</td>
+                                        <td>${rep.nom_complet || 'N/A'}</td>
+                                        <td>${rep.telephones_flashes || 0}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -180,28 +303,37 @@
                 </div>
             `;
 
-            // Initialiser les graphiques
-            initCharts(stats);
+            // Vérifier que Chart est disponible avant d'initialiser
+            if (typeof Chart !== 'undefined') {
+                initCharts(stats);
+            } else {
+                console.error('Chart.js non chargé');
+            }
         }
 
         function initCharts(stats) {
-            // Graphique mensuel
-            const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-            new Chart(monthlyCtx, {
-                type: 'bar',
-                data: {
-                    labels: stats.stats_mois.map(s => s.mois),
-                    datasets: [{
-                        label: 'Signalements par mois',
-                        data: stats.stats_mois.map(s => s.nombre),
-                        backgroundColor: '#3498db'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
+            try {
+                const monthlyCtx = document.getElementById('monthlyChart');
+                if (!monthlyCtx) return;
+                
+                new Chart(monthlyCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: (stats.stats_mois || []).map(s => s.mois || ''),
+                        datasets: [{
+                            label: 'Signalements par mois',
+                            data: (stats.stats_mois || []).map(s => s.nombre || 0),
+                            backgroundColor: '#3498db'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            } catch (error) {
+                console.error('Erreur initialisation graphique:', error);
+            }
         }
 
         // =============================================================
@@ -210,6 +342,8 @@
 
         function loadRechercheTab() {
             const tabContent = document.getElementById('tab-content');
+            if (!tabContent) return;
+            
             tabContent.innerHTML = `
                 <div class="card">
                     <div class="card-header">
@@ -218,7 +352,7 @@
                     <div class="form-group">
                         <input type="text" id="imei-search" class="form-control" placeholder="Entrez l'IMEI (15 chiffres)" maxlength="15">
                     </div>
-                    <button onclick="searchImei()" class="btn btn-primary">
+                    <button onclick="adminSearchImei()" class="btn btn-primary">
                         <i class="fas fa-search"></i> Rechercher
                     </button>
                     <div id="search-results" style="margin-top: 20px;"></div>
@@ -226,347 +360,19 @@
             `;
         }
 
-        function loadBlacklistTab() {
-            const tabContent = document.getElementById('tab-content');
-            tabContent.innerHTML = `
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Gestion de la Blacklist</h3>
-                        <button onclick="loadBlacklistData()" class="btn btn-primary">
-                            <i class="fas fa-sync"></i> Actualiser
-                        </button>
-                    </div>
-                    <div id="blacklist-content">
-                        <div class="loading">
-                            <div class="loader"></div>
-                            <p>Chargement de la blacklist...</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            loadBlacklistData();
-        }
-
-        async function loadBlacklistData() {
-            const content = document.getElementById('blacklist-content');
-            content.innerHTML = `
-                <div class="loading">
-                    <div class="loader"></div>
-                    <p>Chargement des données...</p>
-                </div>
-            `;
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/admin/blacklist`, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-
-                if (data.blacklist.length === 0) {
-                    content.innerHTML = '<p>Aucun téléphone dans la blacklist</p>';
-                    return;
-                }
-
-                let html = `
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>IMEI</th>
-                                    <th>Marque</th>
-                                    <th>Propriétaire</th>
-                                    <th>CNIB</th>
-                                    <th>Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                `;
-
-                data.blacklist.forEach(phone => {
-                    html += `
-                        <tr>
-                            <td>${phone.imei}</td>
-                            <td>${phone.marque}</td>
-                            <td>${phone.nom_complet}</td>
-                            <td>${phone.cnib}</td>
-                            <td>${new Date(phone.date_signalement).toLocaleDateString()}</td>
-                            <td>
-                                <button onclick="markAsRecovered('${phone.imei}')" class="btn btn-success btn-sm">
-                                    <i class="fas fa-check"></i> Retrouvé
-                                </button>
-                                <button onclick="deleteFromBlacklist('${phone.imei}')" class="btn btn-danger btn-sm">
-                                    <i class="fas fa-trash"></i> Supprimer
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-
-                html += `
-                            </tbody>
-                        </table>
-                    </div>
-                    <p class="text-muted">Total: ${data.blacklist.length} téléphones</p>
-                `;
-
-                content.innerHTML = html;
-
-            } catch (error) {
-                content.innerHTML = `
-                    <div class="notification error">
-                        Erreur: ${error.message}
-                    </div>
-                `;
-            }
-        }
-
-        function loadReparateursTab() {
-            const tabContent = document.getElementById('tab-content');
-            tabContent.innerHTML = `
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Gestion des Réparateurs</h3>
-                        <button onclick="loadReparateursData()" class="btn btn-primary">
-                            <i class="fas fa-sync"></i> Actualiser
-                        </button>
-                    </div>
-                    <div id="reparateurs-content">
-                        <div class="loading">
-                            <div class="loader"></div>
-                            <p>Chargement des réparateurs...</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            loadReparateursData();
-        }
-
-        async function loadReparateursData() {
-            const content = document.getElementById('reparateurs-content');
-            content.innerHTML = `
-                <div class="loading">
-                    <div class="loader"></div>
-                    <p>Chargement des données...</p>
-                </div>
-            `;
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/admin/reparateurs`, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-
-                if (data.reparateurs.length === 0) {
-                    content.innerHTML = '<p>Aucun réparateur enregistré</p>';
-                    return;
-                }
-
-                let html = `
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Nom</th>
-                                    <th>Email</th>
-                                    <th>Téléphone</th>
-                                    <th>Téléphones flashés</th>
-                                    <th>Date inscription</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                `;
-
-                data.reparateurs.forEach(rep => {
-                    html += `
-                        <tr>
-                            <td>${rep.nom_complet}</td>
-                            <td>${rep.email}</td>
-                            <td>${rep.numero_telephone}</td>
-                            <td>${rep.nombre_telephones || 0}</td>
-                            <td>${new Date(rep.date_inscription).toLocaleDateString()}</td>
-                            <td>
-                                <button onclick="blockReparateur(${rep.id})" class="btn btn-warning btn-sm">
-                                    <i class="fas fa-ban"></i> Bloquer
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-
-                html += `
-                            </tbody>
-                        </table>
-                    </div>
-                    <p class="text-muted">Total: ${data.reparateurs.length} réparateurs</p>
-                `;
-
-                content.innerHTML = html;
-
-            } catch (error) {
-                content.innerHTML = `
-                    <div class="notification error">
-                        Erreur: ${error.message}
-                    </div>
-                `;
-            }
-        }
+        // ... (LES AUTRES FONCTIONS RESTENT LES MÊMES) ...
 
         // =============================================================
-        // FONCTIONS D'ACTION
+        // FONCTION DE RECHERCHE IMEI (CORRIGÉE)
         // =============================================================
 
-        async function markAsRecovered(imei) {
-            if (!confirm('Marquer ce téléphone comme retrouvé ?')) return;
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/admin/mark_recovered/${imei}`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('blacklist-content', data.message, 'success');
-                    loadBlacklistData();
-                } else {
-                    throw new Error(data.error);
-                }
-            } catch (error) {
-                showNotification('blacklist-content', 'Erreur: ' + error.message, 'error');
-            }
-        }
-
-        async function deleteFromBlacklist(imei) {
-            if (!confirm('Supprimer définitivement ce téléphone de la blacklist ?')) return;
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/admin/delete_blacklist/${imei}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('blacklist-content', data.message, 'success');
-                    loadBlacklistData();
-                } else {
-                    throw new Error(data.error);
-                }
-            } catch (error) {
-                showNotification('blacklist-content', 'Erreur: ' + error.message, 'error');
-            }
-        }
-
-        async function blockReparateur(id) {
-            if (!confirm('Bloquer ce réparateur ?')) return;
-            
-            showNotification('reparateurs-content', 'Fonctionnalité en développement', 'info');
-        }
-
-        // =============================================================
-        // GESTIONNAIRES D'ÉVÉNEMENTS
-        // =============================================================
-
-        // Navigation dans le sidebar
-        document.querySelectorAll('.sidebar-menu a[data-tab]').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // Mettre à jour la classe active
-                document.querySelectorAll('.sidebar-menu a').forEach(a => {
-                    a.classList.remove('active');
-                });
-                this.classList.add('active');
-                
-                const tab = this.getAttribute('data-tab');
-                loadTab(tab);
-            });
-        });
-
-        // Déconnexion
-        document.getElementById('logout-btn').addEventListener('click', function(e) {
-            e.preventDefault();
-            localStorage.removeItem('admin_token');
-            authToken = null;
-            document.getElementById('admin-dashboard').classList.add('hidden');
-            document.getElementById('login-page').classList.remove('hidden');
-        });
-
-        // =============================================================
-        // CHARGEMENT DES ONGLETS
-        // =============================================================
-
-        async function loadTab(tabName) {
-            const tabContent = document.getElementById('tab-content');
-            tabContent.innerHTML = `
-                <div class="loading">
-                    <div class="loader"></div>
-                    <p>Chargement...</p>
-                </div>
-            `;
-
-            try {
-                switch(tabName) {
-                    case 'dashboard':
-                        await loadDashboard();
-                        break;
-                    case 'recherche':
-                        loadRechercheTab();
-                        break;
-                    case 'blacklist':
-                        loadBlacklistTab();
-                        break;
-                    case 'reparateurs':
-                        loadReparateursTab();
-                        break;
-                    case 'utilisateurs':
-                        tabContent.innerHTML = `<div class="notification info">Gestion des utilisateurs - En développement</div>`;
-                        break;
-                    case 'statistiques':
-                        tabContent.innerHTML = `<div class="notification info">Statistiques avancées - En développement</div>`;
-                        break;
-                    case 'parametres':
-                        tabContent.innerHTML = `<div class="notification info">Paramètres système - En développement</div>`;
-                        break;
-                    default:
-                        tabContent.innerHTML = `<div class="notification info">Onglet en développement</div>`;
-                }
-            } catch (error) {
-                tabContent.innerHTML = `
-                    <div class="notification error">
-                        Erreur: ${error.message}
-                    </div>
-                `;
-            }
-        }
-
-        async function searchImei() {
-            const imei = document.getElementById('imei-search').value;
+        async function adminSearchImei() {
+            const imeiInput = document.getElementById('imei-search');
             const resultsContainer = document.getElementById('search-results');
+            
+            if (!imeiInput || !resultsContainer) return;
+            
+            const imei = imeiInput.value.trim();
             
             if (imei.length !== 15) {
                 resultsContainer.innerHTML = `
@@ -592,6 +398,10 @@
                     body: JSON.stringify({ imei })
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
                 if (data.error) {
@@ -604,21 +414,21 @@
                 if (data.blacklist) {
                     html += `
                         <h5>📱 Blacklisté</h5>
-                        <p><strong>Marque:</strong> ${data.blacklist.marque}</p>
-                        <p><strong>Propriétaire:</strong> ${data.blacklist.nom_complet}</p>
-                        <p><strong>CNIB:</strong> ${data.blacklist.cnib}</p>
-                        <p><strong>Date signalement:</strong> ${new Date(data.blacklist.date_signalement).toLocaleDateString()}</p>
+                        <p><strong>Marque:</strong> ${data.blacklist.marque || 'N/A'}</p>
+                        <p><strong>Propriétaire:</strong> ${data.blacklist.nom_complet || 'N/A'}</p>
+                        <p><strong>CNIB:</strong> ${data.blacklist.cnib || 'N/A'}</p>
+                        <p><strong>Date signalement:</strong> ${data.blacklist.date_signalement ? new Date(data.blacklist.date_signalement).toLocaleDateString() : 'N/A'}</p>
                     `;
                 }
                 
                 if (data.unlocked) {
                     html += `
                         <h5>🔧 Flashé par un réparateur</h5>
-                        <p><strong>Marque:</strong> ${data.unlocked.marque}</p>
-                        <p><strong>Personne:</strong> ${data.unlocked.nom_personne}</p>
-                        <p><strong>Réparateur:</strong> ${data.unlocked.nom_reparateur}</p>
-                        <p><strong>Contact réparateur:</strong> ${data.unlocked.email_reparateur}</p>
-                        <p><strong>Date flash:</strong> ${new Date(data.unlocked.date_ajout).toLocaleDateString()}</p>
+                        <p><strong>Marque:</strong> ${data.unlocked.marque || 'N/A'}</p>
+                        <p><strong>Personne:</strong> ${data.unlocked.nom_personne || 'N/A'}</p>
+                        <p><strong>Réparateur:</strong> ${data.unlocked.nom_reparateur || 'N/A'}</p>
+                        <p><strong>Contact réparateur:</strong> ${data.unlocked.email_reparateur || 'N/A'}</p>
+                        <p><strong>Date flash:</strong> ${data.unlocked.date_ajout ? new Date(data.unlocked.date_ajout).toLocaleDateString() : 'N/A'}</p>
                     `;
                 }
                 
@@ -630,16 +440,16 @@
                 resultsContainer.innerHTML = html;
                 
             } catch (error) {
+                console.error('Erreur recherche IMEI:', error);
                 resultsContainer.innerHTML = `
                     <div class="notification error">Erreur: ${error.message}</div>
                 `;
             }
         }
 
-        // Charger le dashboard par défaut
-        if (authToken) {
-            loadDashboard();
-        }
+        // Exposer la fonction globalement pour les onclick
+        window.adminSearchImei = adminSearchImei;
+
     </script>
 </body>
 </html>
