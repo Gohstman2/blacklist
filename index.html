@@ -909,12 +909,12 @@
                         document.getElementById('phone-brand').textContent = result.marque || 'Non spécifié';
                         document.getElementById('phone-imei').textContent = result.imei;
                         document.getElementById('reporter-name').textContent = result.nom_personne || 'Non spécifié';
-                        document.getElementById('phone-carrier').textContent = result.nom_telecom || 'Non spécifié';
-                        document.getElementById('reporter-phone').textContent = result.numero || 'Non spécifié';
-                        document.getElementById('reporter-cnib').textContent = result.cnib || 'Non spécifié';
-                        document.getElementById('other-id').textContent = result.autre_piece || 'Aucune';
+                        document.getElementById('phone-carrier').textContent = 'Non spécifié';
+                        document.getElementById('reporter-phone').textContent = 'Non spécifié';
+                        document.getElementById('reporter-cnib').textContent = 'Non spécifié';
+                        document.getElementById('other-id').textContent =  'Aucune';
                         
-                        showNotification('Téléphone trouvé dans notre base de données!', 'success');
+                        showNotification('Nous avont trouver votre telephone rendez vous vite a la police pour entamer les processus de recuperation', 'success');
                     } else {
                         noResults.classList.remove('hidden');
                         document.getElementById('imei').value = imei;
