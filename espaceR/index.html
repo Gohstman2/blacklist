@@ -587,6 +587,30 @@
     </div>
 
     <script>
+        // Envoi de JSON avec fetch (async/await)
+async function postJson(url, data) {
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json' // important pour JSON
+      },
+      body: JSON.stringify(data),
+      credentials: 'same-origin' // ou 'include' si tu veux envoyer les cookies cross-site
+    });
+
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    const json = await res.json();
+    return json;
+  } catch (err) {
+    console.error('Erreur POST:', err);
+    throw err;
+  }
+}
+
+
+
+
         // DOM Elements
         const loginPage = document.getElementById('login-page');
         const dashboardPage = document.getElementById('dashboard-page');
@@ -701,6 +725,12 @@
                 showAlert(loginAlert, 'Veuillez remplir tous les champs', 'error');
                 return;
             }
+            postJson('https://blackliste.netlify.app/api/login_reparateur', { name: 'Alice', age: 30 })
+              .then(data => console.log('Réponse:', data));
+            if(data.succes){
+                alert("Connextion reuissi")
+                return;
+                     }
             
             // Simulate API call
             setTimeout(() => {
