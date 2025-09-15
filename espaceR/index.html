@@ -725,7 +725,7 @@ async function postJson(url, data) {
                 showAlert(loginAlert, 'Veuillez remplir tous les champs', 'error');
                 return;
             }
-            postJson('https://blackliste.netlify.app/api/login_reparateur', { name: 'Alice', age: 30 })
+            postJson('https://blackliste.netlify.app/api/login_reparateur', {'email': email, 'password': password })
               .then(data => console.log('Réponse:', data)
                 
                    if(data.succes){
