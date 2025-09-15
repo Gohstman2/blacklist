@@ -726,11 +726,14 @@ async function postJson(url, data) {
                 return;
             }
             postJson('https://blackliste.netlify.app/api/login_reparateur', { name: 'Alice', age: 30 })
-              .then(data => console.log('Réponse:', data));
-            if(data.succes){
+              .then(data => console.log('Réponse:', data)
+                
+                   if(data.succes){
+                
                 alert("Connextion reuissi")
                 return;
-                     }
+                     });
+            
             
             // Simulate API call
             setTimeout(() => {
