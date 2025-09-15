@@ -279,6 +279,20 @@
             font-weight: bold;
         }
         
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
         @media (max-width: 768px) {
             .main-content {
                 flex-direction: column;
@@ -350,7 +364,10 @@
                                 <input type="password" id="password" class="form-control" placeholder="Votre mot de passe">
                             </div>
                             
-                            <button id="loginBtn" class="btn btn-primary btn-block">Se connecter</button>
+                            <button id="loginBtn" class="btn btn-primary btn-block">
+                                <span id="loginText">Se connecter</span>
+                                <span id="loginSpinner" style="display:none;" class="loading"></span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -459,7 +476,10 @@
                                 <input type="text" id="autre_piece" class="form-control" placeholder="Passeport, permis, etc.">
                             </div>
                             
-                            <button type="submit" class="btn btn-primary btn-block">Enregistrer le téléphone</button>
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <span id="addPhoneText">Enregistrer le téléphone</span>
+                                <span id="addPhoneSpinner" style="display:none;" class="loading"></span>
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -511,7 +531,10 @@
                             <input type="text" id="searchImei" class="form-control" placeholder="Entrez le numéro IMEI">
                         </div>
                         
-                        <button id="searchImeiBtn" class="btn btn-primary">Rechercher</button>
+                        <button id="searchImeiBtn" class="btn btn-primary">
+                            <span id="searchImeiText">Rechercher</span>
+                            <span id="searchImeiSpinner" style="display:none;" class="loading"></span>
+                        </button>
                         
                         <div id="searchResult" class="mt-4" style="display:none;">
                             <h3>Résultat de la recherche</h3>
@@ -578,7 +601,10 @@
                                 <input type="password" id="confirmPassword" class="form-control">
                             </div>
                             
-                            <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                            <button type="submit" class="btn btn-primary">
+                                <span id="profileText">Enregistrer les modifications</span>
+                                <span id="profileSpinner" style="display:none;" class="loading"></span>
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -587,29 +613,28 @@
     </div>
 
     <script>
+        // Configuration de l'API
+        const API_BASE_URL = 'https://blackliste.netlify.app/api';
+        
         // Envoi de JSON avec fetch (async/await)
-async function postJson(url, data) {
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json' // important pour JSON
-      },
-      body: JSON.stringify(data),
-      credentials: 'same-origin' // ou 'include' si tu veux envoyer les cookies cross-site
-    });
+        async function postJson(url, data) {
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
 
-    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-    const json = await res.json();
-    return json;
-  } catch (err) {
-    console.error('Erreur POST:', err);
-    throw err;
-  }
-}
-
-
-
+                if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+                const json = await res.json();
+                return json;
+            } catch (err) {
+                console.error('Erreur POST:', err);
+                throw err;
+            }
+        }
 
         // DOM Elements
         const loginPage = document.getElementById('login-page');
@@ -623,8 +648,19 @@ async function postJson(url, data) {
         const userInfo = document.getElementById('userInfo');
         
         const loginBtn = document.getElementById('loginBtn');
+        const loginText = document.getElementById('loginText');
+        const loginSpinner = document.getElementById('loginSpinner');
+        
         const logoutBtn = document.getElementById('logoutBtn');
         const searchImeiBtn = document.getElementById('searchImeiBtn');
+        const searchImeiText = document.getElementById('searchImeiText');
+        const searchImeiSpinner = document.getElementById('searchImeiSpinner');
+        
+        const addPhoneText = document.getElementById('addPhoneText');
+        const addPhoneSpinner = document.getElementById('addPhoneSpinner');
+        
+        const profileText = document.getElementById('profileText');
+        const profileSpinner = document.getElementById('profileSpinner');
         
         const loginAlert = document.getElementById('loginAlert');
         const addPhoneAlert = document.getElementById('addPhoneAlert');
@@ -635,56 +671,6 @@ async function postJson(url, data) {
         
         // Current user data
         let currentUser = null;
-        
-        // Simulated database (in a real app, this would be API calls)
-        const mockReparateur = {
-            id: 1,
-            nom_complet: "Jean Dupont",
-            cnib: "AB1234567",
-            numero_telephone: "+225 07 07 12 34 56",
-            nom_telecom: "Orange",
-            email: "jean.dupont@example.com",
-            date_inscription: "2023-01-15",
-            nombre_telephones_flashes: 12,
-            nombre_telephones_retrouves: 3,
-            id_unique: "jd123456789"
-        };
-        
-        const mockPhones = [
-            {
-                id: 1,
-                imei: "123456789012345",
-                marque: "Samsung",
-                modele: "Galaxy S21",
-                nom_personne: "Marie Koné",
-                nom_telecom: "MTN",
-                numero_telephone: "+225 05 45 78 96 32",
-                cnib: "CI9876543",
-                date_ajout: "2023-10-15"
-            },
-            {
-                id: 2,
-                imei: "987654321098765",
-                marque: "Apple",
-                modele: "iPhone 12",
-                nom_personne: "Paul Kouassi",
-                nom_telecom: "Orange",
-                numero_telephone: "+225 07 08 95 74 63",
-                cnib: "CI1234567",
-                date_ajout: "2023-10-10"
-            },
-            {
-                id: 3,
-                imei: "567890123456789",
-                marque: "Tecno",
-                modele: "Camon 17",
-                nom_personne: "Alice Bamba",
-                nom_telecom: "Moov",
-                numero_telephone: "+225 01 02 03 04 05",
-                cnib: "CI7654321",
-                date_ajout: "2023-10-05"
-            }
-        ];
         
         // Event Listeners
         loginBtn.addEventListener('click', login);
@@ -716,7 +702,7 @@ async function postJson(url, data) {
         });
         
         // Functions
-        function login() {
+        async function login() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             
@@ -725,29 +711,42 @@ async function postJson(url, data) {
                 showAlert(loginAlert, 'Veuillez remplir tous les champs', 'error');
                 return;
             }
-            postJson('https://blackliste.netlify.app/api/login_reparateur', {email: email, password: password })
-              .then(data => console.log('Réponse:', data)
-                
-                   if(data.succes){
-                
-                alert("Connextion reuissi")
-                return;
-                     });
             
+            // Show loading state
+            loginText.style.display = 'none';
+            loginSpinner.style.display = 'inline-block';
+            loginBtn.disabled = true;
             
-            // Simulate API call
-            setTimeout(() => {
-                // For demo purposes, any email/password will work
-                currentUser = mockReparateur;
+            try {
+                const data = await postJson(`${API_BASE_URL}/login_reparateur`, {
+                    email: email,
+                    mot_de_passe: password
+                });
                 
-                // Update UI
-                showDashboard();
-                showAlert(loginAlert, 'Connexion réussie!', 'success');
-            }, 1000);
+                if (data.success) {
+                    currentUser = data.reparateur;
+                    localStorage.setItem('reparateur', JSON.stringify(currentUser));
+                    
+                    // Update UI
+                    showDashboard();
+                    showAlert(loginAlert, 'Connexion réussie!', 'success');
+                } else {
+                    showAlert(loginAlert, data.error || 'Email ou mot de passe incorrect', 'error');
+                }
+            } catch (error) {
+                console.error('Erreur de connexion:', error);
+                showAlert(loginAlert, 'Erreur de connexion au serveur', 'error');
+            } finally {
+                // Reset loading state
+                loginText.style.display = 'inline-block';
+                loginSpinner.style.display = 'none';
+                loginBtn.disabled = false;
+            }
         }
         
         function logout() {
             currentUser = null;
+            localStorage.removeItem('reparateur');
             showPage('login-page');
             sidebar.style.display = 'none';
             userInfo.style.display = 'none';
@@ -757,7 +756,7 @@ async function postJson(url, data) {
             document.getElementById('password').value = '';
         }
         
-        function showDashboard() {
+        async function showDashboard() {
             showPage('dashboard-page');
             sidebar.style.display = 'block';
             userInfo.style.display = 'flex';
@@ -769,62 +768,96 @@ async function postJson(url, data) {
                 currentUser.nom_complet.split(' ').map(n => n[0]).join('');
             
             // Update stats
-            document.getElementById('statPhones').textContent = currentUser.nombre_telephones_flashes;
-            document.getElementById('statRecovered').textContent = currentUser.nombre_telephones_retrouves;
-            document.getElementById('statThisMonth').textContent = '3';
+            document.getElementById('statPhones').textContent = currentUser.nombre_telephones_flashes || 0;
+            document.getElementById('statRecovered').textContent = currentUser.nombre_telephones_retrouves || 0;
             
-            // Update recent activity
-            const recentActivity = document.getElementById('recentActivity');
-            recentActivity.innerHTML = '';
+            // Try to get this month's count
+            try {
+                const response = await fetch(`${API_BASE_URL}/reparateurs`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.reparateurs) {
+                        const reparateur = data.reparateurs.find(r => r.id === currentUser.id);
+                        if (reparateur) {
+                            document.getElementById('statThisMonth').textContent = reparateur.nombre_telephones_flashes || 0;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur lors de la récupération des statistiques:', error);
+                document.getElementById('statThisMonth').textContent = '0';
+            }
             
-            mockPhones.slice(0, 3).forEach(phone => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${formatDate(phone.date_ajout)}</td>
-                    <td>${phone.imei}</td>
-                    <td>${phone.marque}</td>
-                    <td>${phone.modele}</td>
-                    <td>${phone.nom_personne}</td>
-                `;
-                recentActivity.appendChild(row);
-            });
-            
-            // Load phone list
+            // Load recent activity and phone list
+            loadRecentActivity();
             loadPhoneList();
             
             // Load profile data
             loadProfile();
         }
         
-        function loadPhoneList() {
-            const phonesList = document.getElementById('phonesList');
-            phonesList.innerHTML = '';
+        async function loadRecentActivity() {
+            const recentActivity = document.getElementById('recentActivity');
+            recentActivity.innerHTML = '<tr><td colspan="5" style="text-align: center;">Chargement...</td></tr>';
             
-            mockPhones.forEach(phone => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${formatDate(phone.date_ajout)}</td>
-                    <td>${phone.imei}</td>
-                    <td>${phone.marque}</td>
-                    <td>${phone.modele}</td>
-                    <td>${phone.nom_personne}</td>
-                    <td>${phone.nom_telecom}</td>
-                `;
-                phonesList.appendChild(row);
-            });
+            try {
+                // In a real app, you would fetch only the recent phones for this reparateur
+                const response = await fetch(`${API_BASE_URL}/reparateurs`);
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // For demo purposes, we'll just show some mock data
+                    // In a real app, you would have an API endpoint to get phones by reparateur ID
+                    recentActivity.innerHTML = '';
+                    
+                    if (currentUser.nombre_telephones_flashes > 0) {
+                        // Show placeholder for recent activity
+                        for (let i = 0; i < 3; i++) {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${new Date().toLocaleDateString('fr-FR')}</td>
+                                <td>IMEI${i + 1}*********</td>
+                                <td>Marque${i + 1}</td>
+                                <td>Modèle${i + 1}</td>
+                                <td>Propriétaire${i + 1}</td>
+                            `;
+                            recentActivity.appendChild(row);
+                        }
+                    } else {
+                        recentActivity.innerHTML = '<tr><td colspan="5" style="text-align: center;">Aucune activité récente</td></tr>';
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement de l\'activité récente:', error);
+                recentActivity.innerHTML = '<tr><td colspan="5" style="text-align: center;">Erreur de chargement</td></tr>';
+            }
+        }
+        
+        async function loadPhoneList() {
+            const phonesList = document.getElementById('phonesList');
+            phonesList.innerHTML = '<tr><td colspan="6" style="text-align: center;">Chargement...</td></tr>';
+            
+            try {
+                // In a real app, you would fetch phones for this specific reparateur
+                // For now, we'll just show a message
+                phonesList.innerHTML = '<tr><td colspan="6" style="text-align: center;">Fonctionnalité à implémenter avec l\'API</td></tr>';
+            } catch (error) {
+                console.error('Erreur lors du chargement de la liste des téléphones:', error);
+                phonesList.innerHTML = '<tr><td colspan="6" style="text-align: center;">Erreur de chargement</td></tr>';
+            }
         }
         
         function loadProfile() {
             if (!currentUser) return;
             
-            document.getElementById('profileName').value = currentUser.nom_complet;
-            document.getElementById('profileCnib').value = currentUser.cnib;
-            document.getElementById('profilePhone').value = currentUser.numero_telephone;
-            document.getElementById('profileTelecom').value = currentUser.nom_telecom;
-            document.getElementById('profileEmail').value = currentUser.email;
+            document.getElementById('profileName').value = currentUser.nom_complet || '';
+            document.getElementById('profileCnib').value = currentUser.cnib || '';
+            document.getElementById('profilePhone').value = currentUser.numero_telephone || '';
+            document.getElementById('profileTelecom').value = currentUser.nom_telecom || '';
+            document.getElementById('profileEmail').value = currentUser.email || '';
         }
         
-        function addPhone() {
+        async function addPhone() {
             const imei = document.getElementById('imei').value;
             const marque = document.getElementById('marque').value;
             const modele = document.getElementById('modele').value;
@@ -845,37 +878,52 @@ async function postJson(url, data) {
                 return;
             }
             
-            // Simulate API call
-            setTimeout(() => {
-                // Add to mock data
-                mockPhones.unshift({
-                    id: mockPhones.length + 1,
-                    imei,
-                    marque,
-                    modele,
-                    nom_personne,
-                    nom_telecom,
-                    numero_telephone,
-                    cnib,
-                    autre_piece,
-                    date_ajout: new Date().toISOString().split('T')[0]
+            // Show loading state
+            addPhoneText.style.display = 'none';
+            addPhoneSpinner.style.display = 'inline-block';
+            document.querySelector('#addPhoneForm button[type="submit"]').disabled = true;
+            
+            try {
+                const data = await postJson(`${API_BASE_URL}/ajouter_telephone`, {
+                    imei: imei,
+                    marque: marque,
+                    modele: modele,
+                    nom_personne: nom_personne,
+                    nom_telecom: nom_telecom,
+                    numero_telephone: numero_telephone,
+                    cnib: cnib,
+                    autre_piece: autre_piece,
+                    id_reparateur: currentUser.id
                 });
                 
-                // Update user stats
-                currentUser.nombre_telephones_flashes += 1;
-                
-                // Clear form
-                document.getElementById('addPhoneForm').reset();
-                
-                // Show success message
-                showAlert(addPhoneAlert, 'Téléphone enregistré avec succès!', 'success');
-                
-                // Update dashboard
-                showDashboard();
-            }, 1000);
+                if (data.success) {
+                    // Clear form
+                    document.getElementById('addPhoneForm').reset();
+                    
+                    // Show success message
+                    showAlert(addPhoneAlert, 'Téléphone enregistré avec succès!', 'success');
+                    
+                    // Update user stats
+                    currentUser.nombre_telephones_flashes += 1;
+                    localStorage.setItem('reparateur', JSON.stringify(currentUser));
+                    
+                    // Update dashboard
+                    showDashboard();
+                } else {
+                    showAlert(addPhoneAlert, data.error || 'Erreur lors de l\'enregistrement', 'error');
+                }
+            } catch (error) {
+                console.error('Erreur lors de l\'ajout du téléphone:', error);
+                showAlert(addPhoneAlert, 'Erreur de connexion au serveur', 'error');
+            } finally {
+                // Reset loading state
+                addPhoneText.style.display = 'inline-block';
+                addPhoneSpinner.style.display = 'none';
+                document.querySelector('#addPhoneForm button[type="submit"]').disabled = false;
+            }
         }
         
-        function searchImei() {
+        async function searchImei() {
             const imei = document.getElementById('searchImei').value;
             
             if (!imei || imei.length !== 15) {
@@ -883,26 +931,33 @@ async function postJson(url, data) {
                 return;
             }
             
-            // Simulate API call
-            setTimeout(() => {
+            // Show loading state
+            searchImeiText.style.display = 'none';
+            searchImeiSpinner.style.display = 'inline-block';
+            searchImeiBtn.disabled = true;
+            
+            try {
+                const data = await postJson(`${API_BASE_URL}/recherche_imei`, {
+                    imei: imei
+                });
+                
                 const resultContent = document.getElementById('resultContent');
                 const searchResult = document.getElementById('searchResult');
                 
-                // For demo, randomly determine if found
-                const found = Math.random() > 0.5;
-                
-                if (found) {
-                    const phone = mockPhones[0];
+                if (data.trouve) {
                     resultContent.innerHTML = `
                         <div class="alert alert-success">
                             <i class="fas fa-check-circle"></i>
                             <span>Ce téléphone a été flashé et enregistré dans notre système</span>
                         </div>
-                        <p><strong>Marque:</strong> ${phone.marque}</p>
-                        <p><strong>Modèle:</strong> ${phone.modele}</p>
-                        <p><strong>Propriétaire:</strong> ${phone.nom_personne}</p>
-                        <p><strong>Opérateur:</strong> ${phone.nom_telecom}</p>
-                        <p><strong>Enregistré le:</strong> ${formatDate(phone.date_ajout)}</p>
+                        <p><strong>Marque:</strong> ${data.marque}</p>
+                        <p><strong>IMEI:</strong> ${data.imei}</p>
+                        <p><strong>Propriétaire:</strong> ${data.nom_personne}</p>
+                        <p><strong>Opérateur:</strong> ${data.nom_telecom}</p>
+                        <p><strong>Numéro:</strong> ${data.numero}</p>
+                        <p><strong>CNIB:</strong> ${data.cnib}</p>
+                        ${data.autre_piece ? `<p><strong>Autre pièce:</strong> ${data.autre_piece}</p>` : ''}
+                        ${data.reparateur ? `<p><strong>Réparateur:</strong> ${data.reparateur}</p>` : ''}
                     `;
                 } else {
                     resultContent.innerHTML = `
@@ -915,10 +970,18 @@ async function postJson(url, data) {
                 }
                 
                 searchResult.style.display = 'block';
-            }, 1000);
+            } catch (error) {
+                console.error('Erreur lors de la recherche IMEI:', error);
+                alert('Erreur lors de la recherche. Veuillez réessayer.');
+            } finally {
+                // Reset loading state
+                searchImeiText.style.display = 'inline-block';
+                searchImeiSpinner.style.display = 'none';
+                searchImeiBtn.disabled = false;
+            }
         }
         
-        function updateProfile() {
+        async function updateProfile() {
             const name = document.getElementById('profileName').value;
             const cnib = document.getElementById('profileCnib').value;
             const phone = document.getElementById('profilePhone').value;
@@ -940,14 +1003,24 @@ async function postJson(url, data) {
                 return;
             }
             
-            // Simulate API call
-            setTimeout(() => {
+            // Show loading state
+            profileText.style.display = 'none';
+            profileSpinner.style.display = 'inline-block';
+            document.querySelector('#profileForm button[type="submit"]').disabled = true;
+            
+            try {
+                // In a real app, you would call an API endpoint to update the profile
+                // For now, we'll just update the local storage
+                
                 // Update user data
                 currentUser.nom_complet = name;
                 currentUser.cnib = cnib;
                 currentUser.numero_telephone = phone;
                 currentUser.nom_telecom = telecom;
                 currentUser.email = email;
+                
+                // Save to localStorage
+                localStorage.setItem('reparateur', JSON.stringify(currentUser));
                 
                 // Update UI
                 document.getElementById('userName').textContent = currentUser.nom_complet;
@@ -959,7 +1032,15 @@ async function postJson(url, data) {
                 
                 // Show success message
                 showAlert(profileAlert, 'Profil mis à jour avec succès!', 'success');
-            }, 1000);
+            } catch (error) {
+                console.error('Erreur lors de la mise à jour du profil:', error);
+                showAlert(profileAlert, 'Erreur lors de la mise à jour du profil', 'error');
+            } finally {
+                // Reset loading state
+                profileText.style.display = 'inline-block';
+                profileSpinner.style.display = 'none';
+                document.querySelector('#profileForm button[type="submit"]').disabled = false;
+            }
         }
         
         function showPage(pageId) {
@@ -983,28 +1064,22 @@ async function postJson(url, data) {
             }, 5000);
         }
         
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('fr-FR');
+        // Check if user is already logged in
+        function checkLoginStatus() {
+            const savedUser = localStorage.getItem('reparateur');
+            if (savedUser) {
+                try {
+                    currentUser = JSON.parse(savedUser);
+                    showDashboard();
+                } catch (e) {
+                    console.error('Erreur lors de la récupération de la session:', e);
+                    localStorage.removeItem('reparateur');
+                }
+            }
         }
-
-        // données à envoyer
-const data = { email: "clientfrp21@gmail.com", password: "admin123" };
-
-fetch("https://example.com/api", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json" // on envoie du JSON
-  },
-  body: JSON.stringify(data)
-})
-  .then(async res => {
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
-    console.log("Réponse:", json);
-  })
-  .catch(err => console.error("Erreur:", err));
-
+        
+        // Initialize the app
+        checkLoginStatus();
     </script>
 </body>
 </html>
