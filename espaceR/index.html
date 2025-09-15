@@ -987,6 +987,24 @@ async function postJson(url, data) {
             const date = new Date(dateString);
             return date.toLocaleDateString('fr-FR');
         }
+
+        // données à envoyer
+const data = { email: "clientfrp21@gmail.com", password: "admin123" };
+
+fetch("https://example.com/api", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json" // on envoie du JSON
+  },
+  body: JSON.stringify(data)
+})
+  .then(async res => {
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    console.log("Réponse:", json);
+  })
+  .catch(err => console.error("Erreur:", err));
+
     </script>
 </body>
 </html>
