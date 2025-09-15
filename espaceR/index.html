@@ -943,12 +943,20 @@
                 
                 const resultContent = document.getElementById('resultContent');
                 const searchResult = document.getElementById('searchResult');
-                
+                if (data.blacklist == "True"){
+                                            <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i>
+
+                            <span color="red">Danger telephone blacklister veuillez informer aux autorites </span>
+                        </div>
+                                                }
+                    
                 if (data.trouve) {
                     resultContent.innerHTML = `
                         <div class="alert alert-success">
                             <i class="fas fa-check-circle"></i>
-                            <span>Ce téléphone a été flashé et enregistré dans notre système</span>
+                            <span>Ce téléphone a été flashé et enregistré dans notre système</span><br>
+                            <span color="red">Danger telephone blacklister veuillez informer aux autorites </span>
                         </div>
                         <p><strong>Marque:</strong> ${data.marque}</p>
                         <p><strong>IMEI:</strong> ${data.imei}</p>
@@ -958,6 +966,7 @@
                         <p><strong>CNIB:</strong> ${data.cnib}</p>
                         ${data.autre_piece ? `<p><strong>Autre pièce:</strong> ${data.autre_piece}</p>` : ''}
                         ${data.reparateur ? `<p><strong>Réparateur:</strong> ${data.reparateur}</p>` : ''}
+                        
                     `;
                 } else {
                     resultContent.innerHTML = `
