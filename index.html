@@ -997,7 +997,7 @@ function initUserID() {
 
 // Fonction pour faire la requête API et obtenir l'ID
 function fetchUserID() {
-    const API_URL = '/api/generate_user_id'; // Adjust this URL if needed
+    const API_URL = 'https://blackliste.netlify.app/api/generate_user_id'; // Adjust this URL if needed
     
     fetch(API_URL, {
         method: 'GET',
@@ -1045,7 +1045,7 @@ function fetchUserID() {
 // Fonction pour vérifier si l'IP a changé
 function checkIPChange(storedUserID, storedUserIP) {
     // Obtenir l'IP actuelle (approximative via une requête API)
-    fetch('/api/get_client_ip', {
+    fetch('https://blackliste.netlify.app/api/get_client_ip', {
         method: 'GET',
         headers: {
             'Accept': 'application/json'
