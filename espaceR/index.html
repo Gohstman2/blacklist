@@ -943,12 +943,19 @@
                 
                 const resultContent = document.getElementById('resultContent');
                 const searchResult = document.getElementById('searchResult');
+                resultContent.innerHT = ""
                 if (data.blacklist == "True"){
-                alert("Ce telephone a ete deja signaler")
+                                    resultContent.innerHTML = `
+                        <div class="alert alert-error">
+                            <i class="fas fa-times-circle"></i>
+                            <span>Danger : CE TELEPHONE A ETE DEJA SIGNALER</span>
+                        </div>
+
+                    `;
                                                 }
                     
                 if (data.trouve) {
-                    resultContent.innerHTML = `
+                    resultContent.innerHTML += `
                         <div class="alert alert-success">
                             <i class="fas fa-check-circle"></i>
                             <span>Ce téléphone a été flashé et enregistré dans notre système</span><br>
@@ -965,12 +972,12 @@
                         
                     `;
                 } else {
-                    resultContent.innerHTML = `
+                    resultContent.innerHTML += `
                         <div class="alert alert-error">
                             <i class="fas fa-times-circle"></i>
                             <span>Ce téléphone n'a pas été trouvé dans notre système de téléphones flashés</span>
                         </div>
-                        <p>Vous pouvez vérifier s'il est blacklisté en utilisant le formulaire de blacklist.</p>
+
                     `;
                 }
                 
