@@ -375,6 +375,7 @@
                 <li><a href="#recherche" data-tab="recherche"><i class="fas fa-search"></i> Recherche IMEI</a></li>
                 <li><a href="#blacklist" data-tab="blacklist"><i class="fas fa-ban"></i> Blacklist</a></li>
                 <li><a href="#reparateurs" data-tab="reparateurs"><i class="fas fa-tools"></i> Réparateurs</a></li>
+                <li><a href="#retrouves" data-tab="retrouves"><i class="fas fa-mobile-alt"></i> Téléphones Retrouvés</a></li>
                 <li><a href="#utilisateurs" data-tab="utilisateurs"><i class="fas fa-users"></i> Utilisateurs</a></li>
                 <li><a href="#statistiques" data-tab="statistiques"><i class="fas fa-chart-bar"></i> Statistiques</a></li>
                 <li><a href="#parametres" data-tab="parametres"><i class="fas fa-cog"></i> Paramètres</a></li>
@@ -685,76 +686,114 @@
         }
 
         async function searchImei() {
-            const imei = document.getElementById('imei-search').value;
-            const resultsContainer = document.getElementById('search-results');
-            
-            if (imei.length !== 15) {
-                resultsContainer.innerHTML = `
-                    <div class="notification error">IMEI invalide (15 chiffres requis)</div>
-                `;
-                return;
-            }
+    const imei = document.getElementById('imei-search').value;
+    const resultsContainer = document.getElementById('search-results');
+    
+    if (imei.length !== 15) {
+        resultsContainer.innerHTML = `
+            <div class="notification error">IMEI invalide (15 chiffres requis)</div>
+        `;
+        return;
+    }
 
-            resultsContainer.innerHTML = `
-                <div class="loading">
-                    <div class="loader"></div>
-                    <p>Recherche en cours...</p>
+    resultsContainer.innerHTML = `
+        <div class="loading">
+            <div class="loader"></div>
+            <p>Recherche en cours...</p>
+        </div>
+    `;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/search_imei`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ imei })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        let html = '<div class="card">';
+        html += '<h4>Résultats pour IMEI: ' + imei + '</h4>';
+        
+        if (data.blacklist) {
+            html += `
+                <h5>📱 Blacklisté</h5>
+                <p><strong>Marque:</strong> ${data.blacklist.marque}</p>
+                <p><strong>Propriétaire:</strong> ${data.blacklist.nom_complet}</p>
+                <p><strong>Téléphone:</strong> ${data.blacklist.numero_telephone}</p>
+                <p><strong>CNIB:</strong> ${data.blacklist.cnib}</p>
+                <p><strong>Date signalement:</strong> ${new Date(data.blacklist.date_signalement).toLocaleDateString()}</p>
+                
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+                    <button onclick="markAsRecoveredFromSearch('${imei}')" class="btn btn-success">
+                        <i class="fas fa-check-circle"></i> Marquer comme retrouvé
+                    </button>
                 </div>
             `;
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/admin/search_imei`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({ imei })
-                });
-                
-                const data = await response.json();
-                
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-
-                let html = '<div class="card">';
-                html += '<h4>Résultats pour IMEI: ' + imei + '</h4>';
-                
-                if (data.blacklist) {
-                    html += `
-                        <h5>📱 Blacklisté</h5>
-                        <p><strong>Marque:</strong> ${data.blacklist.marque}</p>
-                        <p><strong>Celui qui a signalé :</strong> ${data.blacklist.nom_complet}</p>
-                        <p><strong>CNIB:</strong> ${data.blacklist.cnib}</p>
-                        <p><strong>Date signalement:</strong> ${new Date(data.blacklist.date_signalement).toLocaleDateString()}</p>
-                    `;
-                }
-                
-                if (data.unlocked) {
-                    html += `
-                        <h5>🔧 Flashé par un réparateur</h5>
-                        <p><strong>Marque:</strong> ${data.unlocked.marque}</p>
-                        <p><strong>Personne:</strong> ${data.unlocked.nom_personne}</p>
-                        <p><strong>Réparateur:</strong> ${data.unlocked.nom_reparateur}</p>
-                        <p><strong>Contact réparateur:</strong> ${data.unlocked.email_reparateur}</p>
-                        <p><strong>Date flash:</strong> ${new Date(data.unlocked.date_ajout).toLocaleDateString()}</p>
-                    `;
-                }
-                
-                if (!data.blacklist && !data.unlocked) {
-                    html += '<p>Aucune information trouvée pour cet IMEI</p>';
-                }
-                
-                html += '</div>';
-                resultsContainer.innerHTML = html;
-                
-            } catch (error) {
-                resultsContainer.innerHTML = `
-                    <div class="notification error">Erreur: ${error.message}</div>
-                `;
-            }
         }
+        
+        if (data.unlocked) {
+            html += `
+                <h5>🔧 Flashé par un réparateur</h5>
+                <p><strong>Marque:</strong> ${data.unlocked.marque}</p>
+                <p><strong>Personne:</strong> ${data.unlocked.nom_personne}</p>
+                <p><strong>Réparateur:</strong> ${data.unlocked.nom_reparateur}</p>
+                <p><strong>Contact réparateur:</strong> ${data.unlocked.email_reparateur}</p>
+                <p><strong>Date flash:</strong> ${new Date(data.unlocked.date_ajout).toLocaleDateString()}</p>
+            `;
+        }
+        
+        if (!data.blacklist && !data.unlocked) {
+            html += '<p>Aucune information trouvée pour cet IMEI</p>';
+        }
+        
+        html += '</div>';
+        resultsContainer.innerHTML = html;
+        
+    } catch (error) {
+        resultsContainer.innerHTML = `
+            <div class="notification error">Erreur: ${error.message}</div>
+        `;
+    }
+}
+
+// Fonction pour marquer comme retrouvé depuis la recherche
+async function markAsRecoveredFromSearch(imei) {
+    if (!confirm('Marquer ce téléphone comme retrouvé ?\n\nIl sera déplacé vers la liste des téléphones retrouvés.')) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/mark_recovered/${imei}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('search-results', data.message, 'success');
+            // Recharger les résultats pour mettre à jour l'affichage
+            searchImei();
+        } else {
+            throw new Error(data.error);
+        }
+    } catch (error) {
+        console.error('Erreur marquage retrouvé:', error);
+        showNotification('search-results', 'Erreur: ' + error.message, 'error');
+    }
+}
 
         // Charger le dashboard par défaut
         if (authToken) {
@@ -1491,6 +1530,304 @@ async function loadTab(tabName) {
     }
 }
 
+function loadRetrouvesTab() {
+    const tabContent = document.getElementById('tab-content');
+    if (!tabContent) return;
+    
+    tabContent.innerHTML = `
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Téléphones Retrouvés</h3>
+                <button onclick="loadRetrouvesData()" class="btn btn-primary">
+                    <i class="fas fa-sync"></i> Actualiser
+                </button>
+            </div>
+            <div id="retrouves-content">
+                <div class="loading">
+                    <div class="loader"></div>
+                    <p>Chargement des téléphones retrouvés...</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    loadRetrouvesData();
+}
+
+async function loadRetrouvesData() {
+    const content = document.getElementById('retrouves-content');
+    if (!content) return;
+    
+    content.innerHTML = `
+        <div class="loading">
+            <div class="loader"></div>
+            <p>Chargement des données...</p>
+        </div>
+    `;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/recovered_phones`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        if (!data.recovered_phones || data.recovered_phones.length === 0) {
+            content.innerHTML = '<p class="notification info">Aucun téléphone retrouvé</p>';
+            return;
+        }
+
+        let html = `
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>IMEI</th>
+                            <th>Marque</th>
+                            <th>Propriétaire</th>
+                            <th>Téléphone</th>
+                            <th>CNIB</th>
+                            <th>Date signalement</th>
+                            <th>Date retrouvé</th>
+                            <th>Statut</th>
+                            <th>Réparateur</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        data.recovered_phones.forEach(phone => {
+            const statusBadge = phone.statut === 'rendu' ? 
+                '<span style="color: green;"><i class="fas fa-check"></i> Rendu</span>' : 
+                '<span style="color: orange;"><i class="fas fa-clock"></i> Retrouvé</span>';
+            
+            html += `
+                <tr>
+                    <td>${phone.imei || 'N/A'}</td>
+                    <td>${phone.marque || 'N/A'}</td>
+                    <td>${phone.nom_complet || 'N/A'}</td>
+                    <td>${phone.numero_telephone || 'N/A'}</td>
+                    <td>${phone.cnib || 'N/A'}</td>
+                    <td>${phone.date_signalement ? new Date(phone.date_signalement).toLocaleDateString() : 'N/A'}</td>
+                    <td>${phone.date_retrouve ? new Date(phone.date_retrouve).toLocaleDateString() : 'N/A'}</td>
+                    <td>${statusBadge}</td>
+                    <td>${phone.nom_reparateur || 'Non associé'}</td>
+                    <td>
+                        ${phone.statut !== 'rendu' ? `
+                            <button onclick="markAsReturned('${phone.imei}')" class="btn btn-success btn-sm">
+                                <i class="fas fa-user-check"></i> Marquer rendu
+                            </button>
+                        ` : ''}
+                        <button onclick="viewRecoveredPhoneDetails('${phone.imei}')" class="btn btn-info btn-sm">
+                            <i class="fas fa-eye"></i> Détails
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-muted">Total: ${data.recovered_phones.length} téléphones retrouvés</p>
+        `;
+
+        content.innerHTML = html;
+
+    } catch (error) {
+        console.error('Erreur téléphones retrouvés:', error);
+        content.innerHTML = `
+            <div class="notification error">
+                Erreur: ${error.message}
+            </div>
+        `;
+    }
+}
+
+// Marquer comme rendu au propriétaire
+async function markAsReturned(imei) {
+    if (!confirm('Marquer ce téléphone comme rendu à son propriétaire ?')) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/mark_returned/${imei}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('retrouves-content', data.message, 'success');
+            loadRetrouvesData();
+        } else {
+            throw new Error(data.error);
+        }
+    } catch (error) {
+        console.error('Erreur marquage rendu:', error);
+        showNotification('retrouves-content', 'Erreur: ' + error.message, 'error');
+    }
+}
+
+// Voir les détails d'un téléphone retrouvé
+async function viewRecoveredPhoneDetails(imei) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/recovered_phone/${imei}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        showRecoveredPhoneModal(data.telephone);
+    } catch (error) {
+        showNotification('retrouves-content', 'Erreur: ' + error.message, 'error');
+    }
+}
+
+function showRecoveredPhoneModal(phone) {
+    const statusText = phone.statut === 'rendu' ? 
+        '<span style="color: green; font-weight: bold;">RENDU AU PROPRIÉTAIRE</span>' : 
+        '<span style="color: orange; font-weight: bold;">RETROUVÉ - EN ATTENTE</span>';
+    
+    const modalContent = `
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close-modal" onclick="hideModal()">&times;</span>
+            <h3 class="modal-title"><i class="fas fa-mobile-alt"></i> Détails du Téléphone Retrouvé</h3>
+            
+            <div style="margin: 20px 0;">
+                <div class="detail-item">
+                    <strong>IMEI:</strong> ${phone.imei || 'N/A'}
+                </div>
+                <div class="detail-item">
+                    <strong>Marque:</strong> ${phone.marque || 'N/A'}
+                </div>
+                <div class="detail-item">
+                    <strong>Propriétaire:</strong> ${phone.nom_complet || 'N/A'}
+                </div>
+                <div class="detail-item">
+                    <strong>Téléphone:</strong> ${phone.numero_telephone || 'N/A'}
+                </div>
+                <div class="detail-item">
+                    <strong>CNIB:</strong> ${phone.cnib || 'N/A'}
+                </div>
+                <div class="detail-item">
+                    <strong>Pièce jointe:</strong> ${phone.autre_piece || 'Aucune'}
+                </div>
+                <div class="detail-item">
+                    <strong>Statut:</strong> ${statusText}
+                </div>
+                <div class="detail-item">
+                    <strong>Date signalement:</strong> ${phone.date_signalement ? new Date(phone.date_signalement).toLocaleString() : 'N/A'}
+                </div>
+                <div class="detail-item">
+                    <strong>Date retrouvé:</strong> ${phone.date_retrouve ? new Date(phone.date_retrouve).toLocaleString() : 'N/A'}
+                </div>
+                ${phone.nom_reparateur ? `
+                <div class="detail-item">
+                    <strong>Réparateur:</strong> ${phone.nom_reparateur}
+                </div>
+                <div class="detail-item">
+                    <strong>Contact réparateur:</strong> ${phone.email_reparateur || 'N/A'}
+                </div>
+                ` : ''}
+                <div class="detail-item">
+                    <strong>IP du signalement:</strong> ${phone.ip_client || 'N/A'}
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                ${phone.statut !== 'rendu' ? `
+                <button onclick="markAsReturned('${phone.imei}'); hideModal();" class="btn btn-success">
+                    <i class="fas fa-user-check"></i> Marquer comme rendu
+                </button>
+                ` : ''}
+                <button onclick="hideModal()" class="btn btn-secondary">
+                    Fermer
+                </button>
+            </div>
+        </div>
+    `;
+    
+    showModal(modalContent);
+}
+
+async function loadTab(tabName) {
+    const tabContent = document.getElementById('tab-content');
+    if (!tabContent) return;
+    
+    tabContent.innerHTML = `
+        <div class="loading">
+            <div class="loader"></div>
+            <p>Chargement...</p>
+        </div>
+    `;
+
+    try {
+        switch(tabName) {
+            case 'dashboard':
+                await loadDashboard();
+                break;
+            case 'recherche':
+                loadRechercheTab();
+                break;
+            case 'blacklist':
+                loadBlacklistTab();
+                break;
+            case 'reparateurs':
+                loadReparateursTab();
+                break;
+            case 'retrouves':  // ← NOUVEL ONGLET AJOUTÉ
+                loadRetrouvesTab();
+                break;
+            case 'utilisateurs':
+                loadUtilisateursTab();
+                break;
+            case 'statistiques':
+                loadStatistiquesTab();
+                break;
+            case 'parametres':
+                loadParametresTab();
+                break;
+            default:
+                tabContent.innerHTML = `<div class="notification info">Onglet non reconnu</div>`;
+        }
+    } catch (error) {
+        console.error('Erreur chargement onglet:', error);
+        tabContent.innerHTML = `
+            <div class="notification error">
+                Erreur: ${error.message}
+            </div>
+        `;
+    }
+}
+
 // =============================================================
 // EXPOSER LES FONCTIONS GLOBALEMENT
 // =============================================================
@@ -1501,6 +1838,12 @@ window.markAsRecovered = markAsRecovered;
 window.deleteFromBlacklist = deleteFromBlacklist;
 window.blockReparateur = blockReparateur;
 window.viewReparateur = viewReparateur;
+window.markAsRecoveredFromSearch = markAsRecoveredFromSearch;
+window.loadRetrouvesTab = loadRetrouvesTab;
+window.loadRetrouvesData = loadRetrouvesData;
+window.markAsReturned = markAsReturned;
+window.viewRecoveredPhoneDetails = viewRecoveredPhoneDetails;
+window.showRecoveredPhoneModal = showRecoveredPhoneModal;
     </script>
 </body>
 </html>
