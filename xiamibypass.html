@@ -1,52 +1,170 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ajouter à mon calendrier</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ouvrir / Ajouter au calendrier — Test des boutons</title>
   <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #74b9ff, #a29bfe);
-      color: white;
-      text-align: center;
-      padding: 50px;
-    }
-    h1 {
-      margin-bottom: 20px;
-    }
-    .card {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 20px;
-      padding: 40px;
-      display: inline-block;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
-    button {
-      background-color: #0984e3;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 15px 25px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-    button:hover {
-      background-color: #74b9ff;
-    }
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#4f46e5;--glass:rgba(255,255,255,0.04);--muted:rgba(255,255,255,0.7)}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    body{background:linear-gradient(180deg,#071024 0%, #0b1220 100%);color:#e6eef8;display:flex;align-items:center;justify-content:center;padding:28px}
+    .wrap{max-width:920px;width:100%}
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+    h1{font-size:20px;margin:0}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+    .card{background:var(--card);border-radius:14px;padding:22px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:12px 14px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),#06b6d4);color:white;font-weight:600;cursor:pointer}
+    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);font-weight:600}
+    .small{font-size:13px;padding:8px 10px}
+    .row{display:flex;gap:8px;flex-wrap:wrap}
+    label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
+    input,textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:var(--glass);color:inherit}
+    footer{margin-top:12px;color:var(--muted);font-size:13px}
+    .note{font-size:13px;color:var(--muted);margin-top:10px}
   </style>
 </head>
 <body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Testeur de boutons pour Calendrier</h1>
+        <p class="lead">Teste chaque bouton sur ton téléphone (Android / iPhone). Le site détecte l'appareil et propose la meilleure option.</p>
+      </div>
+    </header>
 
-  <div class="card">
-    <h1>📅 Ajouter à votre calendrier</h1>
-    <p>Cliquez sur le bouton ci-dessous pour ouvrir ou enregistrer l’événement dans votre calendrier.</p>
-    
-    <a href="event.ics" download>
-      <button>Ouvrir dans le calendrier</button>
-    </a>
+    <div class="card">
+      <section>
+        <h2 style="margin-top:0">1) Formulaire rapide (génère un .ics et permet d'ajouter à Google Calendar)</h2>
+        <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">
+          <div style="flex:1;min-width:280px">
+            <label for="title">Titre</label>
+            <input id="title" value="Réunion importante">
+
+            <label for="desc" style="margin-top:8px">Description</label>
+            <textarea id="desc" rows="3">Discussion du projet final</textarea>
+
+            <label for="location" style="margin-top:8px">Lieu</label>
+            <input id="location" value="Bureau principal">
+
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <div style="flex:1">
+                <label for="start">Début</label>
+                <input id="start" type="datetime-local" value="2025-10-25T08:00">
+              </div>
+              <div style="flex:1">
+                <label for="end">Fin</label>
+                <input id="end" type="datetime-local" value="2025-10-25T09:00">
+              </div>
+            </div>
+
+            <div style="margin-top:12px" class="row">
+              <button class="btn" id="btn-download">Télécharger .ics (ouvrir dans Calendrier)</button>
+              <button class="btn secondary small" id="btn-copy-ics">Voir contenu .ics</button>
+            </div>
+
+            <div style="margin-top:10px" class="row">
+              <button class="btn" id="btn-google">Ouvrir Google Calendar (créer évènement)</button>
+              <button class="btn secondary small" id="btn-open-calendar">Ouvrir app Calendrier (Android tentative)</button>
+            </div>
+
+            <p class="note">Si tu utilises iPhone : clique sur <strong>Télécharger .ics</strong> et choisis d'ouvrir avec l'app Calendrier.</p>
+          </div>
+        </div>
+      </section>
+
+      <hr style="margin:18px 0;border:none;border-top:1px solid rgba(255,255,255,0.03)">
+
+      <section>
+        <h2 style="margin-top:0">2) Boutons supplémentaires (tests)</h2>
+        <div class="grid" style="margin-top:8px">
+          <div>
+            <label>Ouvrir Google Calendar (web / app si installée)</label>
+            <div class="row" style="margin-top:8px">
+              <a id="link-gcal-web" class="btn" href="https://calendar.google.com/calendar/u/0/r" target="_blank">Ouvrir Google Calendar</a>
+            </div>
+          </div>
+
+          <div>
+            <label>Télécharger .ics statique</label>
+            <div class="row" style="margin-top:8px">
+              <a id="link-static-ics" class="btn secondary" href="event.ics" download>Download event.ics</a>
+            </div>
+          </div>
+
+          <div>
+            <label>Ouvrir calendrier natif (tentative Android via intent)</label>
+            <div style="margin-top:8px">
+              <button class="btn" id="intent-open">Tentative intent://</button>
+            </div>
+          </div>
+
+          <div>
+            <label>Créer évènement Google Calendar (pré-rempli)</label>
+            <div style="margin-top:8px">
+              <button class="btn" id="gcal-create">Créer sur Google Calendar</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <div>Développé pour tester l'ouverture du calendrier sur téléphone. Si tu veux, je peux ajouter une version qui envoie l'.ics par email directement.</div>
+      </footer>
+    </div>
   </div>
 
+  <script>
+    const el = id => document.getElementById(id);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+
+    function toUTC(dt){const d=new Date(dt);const pad=n=>n.toString().padStart(2,'0');return d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate())+'T'+pad(d.getUTCHours())+pad(d.getUTCMinutes())+'00Z';}
+    function escapeICal(t){return (t||'').replace(/\\\\/g,'\\\\\\\\').replace(/\\n/g,'\\\\n').replace(/,/g,'\\\\,');}
+    function buildICS(){
+      const uid=Date.now()+'@monsite.local';
+      const title=el('title').value,desc=el('desc').value,loc=el('location').value;
+      const dtstart=toUTC(el('start').value),dtend=toUTC(el('end').value);
+      const dtstamp=new Date().toISOString().replace(/[-:]/g,'').replace(/\\.\\d+Z$/,'Z');
+      return [
+        'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//MonSite//Calendrier//FR','BEGIN:VEVENT',
+        `UID:${uid}`,`DTSTAMP:${dtstamp}`,`DTSTART:${dtstart}`,`DTEND:${dtend}`,
+        `SUMMARY:${escapeICal(title)}`,`DESCRIPTION:${escapeICal(desc)}`,`LOCATION:${escapeICal(loc)}`,
+        'END:VEVENT','END:VCALENDAR'
+      ].join('\\r\\n');
+    }
+
+    el('btn-download').onclick=()=>{
+      const ics=buildICS();
+      const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;a.download='event.ics';document.body.appendChild(a);a.click();a.remove();
+      URL.revokeObjectURL(url);
+    };
+
+    el('btn-copy-ics').onclick=()=>alert(buildICS());
+
+    el('gcal-create').onclick=()=>{
+      const title=encodeURIComponent(el('title').value);
+      const details=encodeURIComponent(el('desc').value);
+      const location=encodeURIComponent(el('location').value);
+      const start=toUTC(el('start').value);
+      const end=toUTC(el('end').value);
+      const url=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${start}/${end}`;
+      window.open(url,'_blank');
+    };
+
+    el('intent-open').onclick=()=>{
+      const intent='intent://#Intent;action=android.intent.action.VIEW;category=android.intent.category.DEFAULT;component=com.google.android.calendar/com.android.calendar.AllInOneActivity;end';
+      window.location.href=intent;
+    };
+
+    el('btn-open-calendar').onclick=()=>{
+      if(isAndroid){window.location.href='content://com.android.calendar/time/';}
+      else if(isIOS){alert('Sur iPhone, Safari ne peut pas ouvrir directement l’app Calendrier. Télécharge le .ics ou utilise Google Calendar.');}
+      else alert('Testez sur un appareil mobile.');
+    };
+  </script>
 </body>
 </html>
