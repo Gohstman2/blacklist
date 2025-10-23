@@ -3,168 +3,190 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Ouvrir / Ajouter au calendrier — Test des boutons</title>
+  <title>Testeur GetApps — Intent &amp; URI schemes</title>
   <style>
-    :root{--bg:#0f1724;--card:#0b1220;--accent:#4f46e5;--glass:rgba(255,255,255,0.04);--muted:rgba(255,255,255,0.7)}
-    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
-    body{background:linear-gradient(180deg,#071024 0%, #0b1220 100%);color:#e6eef8;display:flex;align-items:center;justify-content:center;padding:28px}
-    .wrap{max-width:920px;width:100%}
-    header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
-    h1{font-size:20px;margin:0}
-    p.lead{margin:0;color:var(--muted);font-size:13px}
-    .card{background:var(--card);border-radius:14px;padding:22px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:12px 14px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),#06b6d4);color:white;font-weight:600;cursor:pointer}
-    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);font-weight:600}
-    .small{font-size:13px;padding:8px 10px}
-    .row{display:flex;gap:8px;flex-wrap:wrap}
-    label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
-    input,textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:var(--glass);color:inherit}
-    footer{margin-top:12px;color:var(--muted);font-size:13px}
-    .note{font-size:13px;color:var(--muted);margin-top:10px}
+    :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;}
+    body{max-width:980px;margin:24px auto;padding:16px;line-height:1.4;color:#0b1220}
+    h1{font-size:1.6rem;margin-bottom:0.2rem}
+    p.lead{color:#374151}
+    .card{border:1px solid #e6e9ef;padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(9,10,26,0.03);margin:12px 0}
+    label{display:block;margin-top:8px;font-weight:600}
+    input[type="text"]{width:100%;padding:8px;border-radius:8px;border:1px solid #d6d9e6}
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    button{padding:10px 12px;border-radius:10px;border:0;background:#0f1724;color:#fff;cursor:pointer}
+    small{color:#6b7280}
+    .log{font-family:monospace;background:#0f1724;color:#fff;padding:10px;border-radius:8px;min-height:64px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(max-width:700px){.grid{grid-template-columns:1fr}}
+    a.inline{color:#0f1724;text-decoration:underline}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div>
-        <h1>Testeur de boutons pour Calendrier</h1>
-        <p class="lead">Teste chaque bouton sur ton téléphone (Android / iPhone). Le site détecte l'appareil et propose la meilleure option.</p>
-      </div>
-    </header>
+  <h1>Testeur GetApps — Intent &amp; URI schemes</h1>
+  <p class="lead">Page de test pour générer et essayer plusieurs combinaisons d'URI/intent qui peuvent ouvrir <strong>GetApps</strong> (ou d'autres stores) depuis un navigateur mobile.</p>
 
-    <div class="card">
-      <section>
-        <h2 style="margin-top:0">1) Formulaire rapide (génère un .ics et permet d'ajouter à Google Calendar)</h2>
-        <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">
-          <div style="flex:1;min-width:280px">
-            <label for="title">Titre</label>
-            <input id="title" value="Réunion importante">
+  <div class="card">
+    <label for="pkg">Identifiant du package (ex: <code>com.whatsapp</code>)</label>
+    <input id="pkg" type="text" value="com.whatsapp" />
 
-            <label for="desc" style="margin-top:8px">Description</label>
-            <textarea id="desc" rows="3">Discussion du projet final</textarea>
+    <label for="fallback">URL de fallback (optionnelle)</label>
+    <input id="fallback" type="text" placeholder="https://play.google.com/store/apps/details?id=com.whatsapp" />
 
-            <label for="location" style="margin-top:8px">Lieu</label>
-            <input id="location" value="Bureau principal">
+    <div class="row">
+      <button id="btn_intent">Ouvrir (intent:// with package param)</button>
+      <button id="btn_miapp">Ouvrir (miappstore://details)</button>
+      <button id="btn_market">Ouvrir (market://details)</button>
+      <button id="btn_generic">Ouvrir (market + intent fallback)</button>
+      <button id="btn_try_all">Essayer toutes les combinaisons</button>
+    </div>
 
-            <div style="display:flex;gap:8px;margin-top:8px">
-              <div style="flex:1">
-                <label for="start">Début</label>
-                <input id="start" type="datetime-local" value="2025-10-25T08:00">
-              </div>
-              <div style="flex:1">
-                <label for="end">Fin</label>
-                <input id="end" type="datetime-local" value="2025-10-25T09:00">
-              </div>
-            </div>
+    <p style="margin-top:10px"><small>Remarque: les résultats dépendent du navigateur mobile, de la version de MIUI/HyperOS et du fait que <strong>GetApps</strong> soit installé.</small></p>
+  </div>
 
-            <div style="margin-top:12px" class="row">
-              <button class="btn" id="btn-download">Télécharger .ics (ouvrir dans Calendrier)</button>
-              <button class="btn secondary small" id="btn-copy-ics">Voir contenu .ics</button>
-            </div>
+  <div class="card">
+    <h3>Journal / Debug</h3>
+    <div id="log" class="log">Prêt.</div>
+  </div>
 
-            <div style="margin-top:10px" class="row">
-              <button class="btn" id="btn-google">Ouvrir Google Calendar (créer évènement)</button>
-              <button class="btn secondary small" id="btn-open-calendar">Ouvrir app Calendrier (Android tentative)</button>
-            </div>
-
-            <p class="note">Si tu utilises iPhone : clique sur <strong>Télécharger .ics</strong> et choisis d'ouvrir avec l'app Calendrier.</p>
-          </div>
-        </div>
-      </section>
-
-      <hr style="margin:18px 0;border:none;border-top:1px solid rgba(255,255,255,0.03)">
-
-      <section>
-        <h2 style="margin-top:0">2) Boutons supplémentaires (tests)</h2>
-        <div class="grid" style="margin-top:8px">
-          <div>
-            <label>Ouvrir Google Calendar (web / app si installée)</label>
-            <div class="row" style="margin-top:8px">
-              <a id="link-gcal-web" class="btn" href="https://calendar.google.com/calendar/u/0/r" target="_blank">Ouvrir Google Calendar</a>
-            </div>
-          </div>
-
-          <div>
-            <label>Télécharger .ics statique</label>
-            <div class="row" style="margin-top:8px">
-              <a id="link-static-ics" class="btn secondary" href="event.ics" download>Download event.ics</a>
-            </div>
-          </div>
-
-          <div>
-            <label>Ouvrir calendrier natif (tentative Android via intent)</label>
-            <div style="margin-top:8px">
-              <button class="btn" id="intent-open">Tentative intent://</button>
-            </div>
-          </div>
-
-          <div>
-            <label>Créer évènement Google Calendar (pré-rempli)</label>
-            <div style="margin-top:8px">
-              <button class="btn" id="gcal-create">Créer sur Google Calendar</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <footer>
-        <div>Développé pour tester l'ouverture du calendrier sur téléphone. Si tu veux, je peux ajouter une version qui envoie l'.ics par email directement.</div>
-      </footer>
+  <div class="card grid">
+    <div>
+      <h4>Comment ça marche (technique)</h4>
+      <ul>
+        <li>On construit différentes URIs: <code>intent://</code>, <code>miappstore://</code>, <code>market://</code>, etc.</li>
+        <li>On tente d'ouvrir chaque URI en changeant <code>window.location</code> ou en créant un <code>iframe</code> (selon le navigateur).</li>
+        <li>On tente de détecter l'ouverture via <code>visibilitychange</code> et un timeout: si la page devient cachée rapidement, l'intent a très probablement réussi.</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Précautions</h4>
+      <ul>
+        <li>Les navigateurs modernes bloquent parfois les tentatives d'ouverture automatiques — utilisez les boutons manuellement si nécessaire.</li>
+        <li>Ne cliquez pas trop vite sur "Essayer toutes" si votre navigateur bloque les pop-ups.</li>
+      </ul>
     </div>
   </div>
 
   <script>
-    const el = id => document.getElementById(id);
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isAndroid = /Android/.test(navigator.userAgent);
+    const pkgInput = document.getElementById('pkg');
+    const fallbackInput = document.getElementById('fallback');
+    const logEl = document.getElementById('log');
 
-    function toUTC(dt){const d=new Date(dt);const pad=n=>n.toString().padStart(2,'0');return d.getUTCFullYear()+pad(d.getUTCMonth()+1)+pad(d.getUTCDate())+'T'+pad(d.getUTCHours())+pad(d.getUTCMinutes())+'00Z';}
-    function escapeICal(t){return (t||'').replace(/\\\\/g,'\\\\\\\\').replace(/\\n/g,'\\\\n').replace(/,/g,'\\\\,');}
-    function buildICS(){
-      const uid=Date.now()+'@monsite.local';
-      const title=el('title').value,desc=el('desc').value,loc=el('location').value;
-      const dtstart=toUTC(el('start').value),dtend=toUTC(el('end').value);
-      const dtstamp=new Date().toISOString().replace(/[-:]/g,'').replace(/\\.\\d+Z$/,'Z');
-      return [
-        'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//MonSite//Calendrier//FR','BEGIN:VEVENT',
-        `UID:${uid}`,`DTSTAMP:${dtstamp}`,`DTSTART:${dtstart}`,`DTEND:${dtend}`,
-        `SUMMARY:${escapeICal(title)}`,`DESCRIPTION:${escapeICal(desc)}`,`LOCATION:${escapeICal(loc)}`,
-        'END:VEVENT','END:VCALENDAR'
-      ].join('\\r\\n');
+    function log(...args){
+      const time = new Date().toLocaleTimeString();
+      logEl.textContent = time + ' — ' + args.join(' ') + '\n' + logEl.textContent;
     }
 
-    el('btn-download').onclick=()=>{
-      const ics=buildICS();
-      const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');
-      a.href=url;a.download='event.ics';document.body.appendChild(a);a.click();a.remove();
-      URL.revokeObjectURL(url);
-    };
+    function buildIntentLink(packageName, options = {}){
+      const scheme = options.scheme || 'miappstore';
+      const storePackage = options.storePackage || 'com.xiaomi.mipicks';
+      const fallback = options.fallback;
+      let intent = 'intent://details?id=' + encodeURIComponent(packageName) + '#Intent;scheme=' + scheme + ';package=' + storePackage + ';end';
+      if(fallback){
+        intent = 'intent://details?id=' + encodeURIComponent(packageName) + '#Intent;scheme=' + scheme + ';package=' + storePackage + ';S.browser_fallback_url=' + encodeURIComponent(fallback) + ';end';
+      }
+      return intent;
+    }
 
-    el('btn-copy-ics').onclick=()=>alert(buildICS());
+    function openLink(href){
+      log('Tentative d\'ouverture →', href);
+      window.location.href = href;
+    }
 
-    el('gcal-create').onclick=()=>{
-      const title=encodeURIComponent(el('title').value);
-      const details=encodeURIComponent(el('desc').value);
-      const location=encodeURIComponent(el('location').value);
-      const start=toUTC(el('start').value);
-      const end=toUTC(el('end').value);
-      const url=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${start}/${end}`;
-      window.open(url,'_blank');
-    };
+    function openViaIframe(href){
+      log('Tentative via iframe →', href);
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = href;
+      document.body.appendChild(iframe);
+      setTimeout(()=>document.body.removeChild(iframe), 2000);
+    }
 
-    el('intent-open').onclick=()=>{
-      const intent='intent://#Intent;action=android.intent.action.VIEW;category=android.intent.category.DEFAULT;component=com.google.android.calendar/com.android.calendar.AllInOneActivity;end';
-      window.location.href=intent;
-    };
+    let openedDetected = false;
+    document.addEventListener('visibilitychange', ()=>{
+      if(document.hidden){
+        openedDetected = true;
+        log('visibilitychange: la page est cachée — l\'app a probablement ouvert.');
+      } else {
+        log('visibilitychange: la page revenue visible.');
+      }
+    });
 
-    el('btn-open-calendar').onclick=()=>{
-      if(isAndroid){window.location.href='content://com.android.calendar/time/';}
-      else if(isIOS){alert('Sur iPhone, Safari ne peut pas ouvrir directement l’app Calendrier. Télécharge le .ics ou utilise Google Calendar.');}
-      else alert('Testez sur un appareil mobile.');
-    };
+    function tryOpen(href){
+      openedDetected = false;
+      const start = Date.now();
+      try {
+        window.location.href = href;
+      } catch(e){
+        log('Erreur avec location.href — fallback to iframe');
+        openViaIframe(href);
+      }
+      setTimeout(()=>{
+        const took = Date.now() - start;
+        if(openedDetected){
+          log('Succès détecté (heuristique) —', took + 'ms');
+        } else {
+          log('Aucun changement visible détecté après', took + 'ms', '- L\'intent a peut-être échoué ou le navigateur a bloqué l\'action.');
+        }
+      }, 1200);
+    }
+
+    document.getElementById('btn_intent').addEventListener('click', ()=>{
+      const pkg = pkgInput.value.trim();
+      const fallback = fallbackInput.value.trim() || null;
+      const href = buildIntentLink(pkg, {fallback});
+      tryOpen(href);
+    });
+
+    document.getElementById('btn_miapp').addEventListener('click', ()=>{
+      const pkg = pkgInput.value.trim();
+      const href = 'miappstore://details?id=' + encodeURIComponent(pkg);
+      tryOpen(href);
+    });
+
+    document.getElementById('btn_market').addEventListener('click', ()=>{
+      const pkg = pkgInput.value.trim();
+      const href = 'market://details?id=' + encodeURIComponent(pkg);
+      tryOpen(href);
+    });
+
+    document.getElementById('btn_generic').addEventListener('click', ()=>{
+      const pkg = pkgInput.value.trim();
+      const fallback = fallbackInput.value.trim() || ('https://play.google.com/store/apps/details?id=' + encodeURIComponent(pkg));
+      log('Strategy: market:// puis intent with browser_fallback_url');
+      tryOpen('market://details?id=' + encodeURIComponent(pkg));
+      setTimeout(()=>{
+        const href = buildIntentLink(pkg, {fallback});
+        tryOpen(href);
+      }, 1500);
+    });
+
+    document.getElementById('btn_try_all').addEventListener('click', async ()=>{
+      const pkg = pkgInput.value.trim();
+      const fallback = fallbackInput.value.trim() || ('https://play.google.com/store/apps/details?id=' + encodeURIComponent(pkg));
+      const combos = [
+        {label: 'intent (miappstore + package com.xiaomi.mipicks)', href: buildIntentLink(pkg, {fallback})},
+        {label: 'miappstore://details', href: 'miappstore://details?id=' + encodeURIComponent(pkg)},
+        {label: 'market://details', href: 'market://details?id=' + encodeURIComponent(pkg)},
+        {label: 'intent (scheme=mipicks)', href: 'intent://details?id=' + encodeURIComponent(pkg) + '#Intent;scheme=mipicks;package=com.xiaomi.mipicks;end'},
+        {label: 'intent (without package)', href: 'intent://details?id=' + encodeURIComponent(pkg) + '#Intent;scheme=miappstore;end'},
+        {label: 'https fallback', href: fallback}
+      ];
+
+      log('Début de la séquence —', combos.length, 'combinaisons');
+      for(let i=0;i<combos.length;i++){
+        log('('+(i+1)+'/'+combos.length+')', combos[i].label);
+        tryOpen(combos[i].href);
+        await new Promise(res=>setTimeout(res, 1600));
+        if(document.hidden){
+          log('La page est cachée — app ouverte, on attend le retour.');
+          await new Promise(res=>setTimeout(res, 2000));
+          break;
+        }
+      }
+      log('Séquence terminée.');
+    });
+
+    log('User Agent:', navigator.userAgent);
   </script>
 </body>
 </html>
